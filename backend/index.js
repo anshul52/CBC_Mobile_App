@@ -1,19 +1,19 @@
-// native_app/backend/index.js
-
 import express from 'express'; // Import Express using ES6 syntax
 import cors from 'cors'; // Import CORS
-// body-parser is not needed as express.json() is used
+import dotenv from 'dotenv'; // Import dotenv to load environment variables
+import authRoute from './routes/authRoute.js'; 
+import morgan from 'morgan';
+
+dotenv.config(); // Load environment variables from .env file
 
 const app = express(); // Create an Express application
 const PORT = process.env.PORT || 8001; // Set the port
 
 app.use(cors()); // Enable CORS
 app.use(express.json()); // Middleware to parse JSON requests
+app.use(morgan("dev")); // Log requests
 
-// Example route
-app.get('/', (req, res) => {
-    res.send('Hello, World!'); // Respond with a simple message
-});
+app.use("/api/auth", authRoute);
 
 // Start the server
 app.listen(PORT, () => {
