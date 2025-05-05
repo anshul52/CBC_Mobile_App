@@ -7,7 +7,7 @@ import morgan from 'morgan';
 dotenv.config(); // Load environment variables from .env file
 
 const app = express(); // Create an Express application
-const PORT = process.env.PORT || 8001; // Set the port
+const PORT = process.env.PORT; // Set the port
 
 app.use(cors()); // Enable CORS
 app.use(express.json()); // Middleware to parse JSON requests

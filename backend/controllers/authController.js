@@ -1,6 +1,6 @@
 import twilio from 'twilio';
 import dotenv from 'dotenv';
-
+import logger from '../utils/logger.js';
 dotenv.config();
 
 // Initialize Twilio client
@@ -46,13 +46,14 @@ export const sendOtpController = async (req, res) => {
                 from: process.env.TWILIO_PHONE_NUMBER,
                 to: phone
             });
-
+            logger.info('OTP sent successfully to ' + req.body.phone);
             res.status(200).json({
                 success: true,
                 message: "OTP sent successfully"
             });
         } catch (twilioError) {
             console.error('Twilio Error:', twilioError);
+            logger.error('Error in sendOtpController: ' + twilioError.message);
             res.status(500).json({
                 success: false,
                 message: "Failed to send OTP"
@@ -60,6 +61,7 @@ export const sendOtpController = async (req, res) => {
         }
     } catch (error) {
         console.error('Error in sendOtpController:', error);
+        logger.error('Error in sendOtpController: ' + error.message);
         res.status(500).json({
             success: false,
             message: "Internal server error"
@@ -84,6 +86,7 @@ export const verifyOtpController = async (req, res) => {
 
         // Check if OTP exists
         if (!storedData) {
+            logger.error('No OTP found for this number: ' + phone);
             return res.status(400).json({
                 success: false,
                 message: "No OTP found for this number"
@@ -93,6 +96,7 @@ export const verifyOtpController = async (req, res) => {
         // Check if OTP is expired (5 minutes)
         if (Date.now() - storedData.timestamp > 5 * 60 * 1000) {
             otpStore.delete(phone);
+            logger.error('OTP has expired for this number: ' + phone);
             return res.status(400).json({
                 success: false,
                 message: "OTP has expired"
@@ -105,6 +109,7 @@ export const verifyOtpController = async (req, res) => {
         // Check max attempts (3)
         if (storedData.attempts >= 3) {
             otpStore.delete(phone);
+            logger.error('Max attempts reached for this number: ' + phone);
             return res.status(400).json({
                 success: false,
                 message: "Max attempts reached. Please request new OTP"
@@ -118,6 +123,7 @@ export const verifyOtpController = async (req, res) => {
 
             // Here you would typically save the user to your database
             // For now, just return success
+            logger.info('OTP verified successfully for number: ' + phone);
             res.status(200).json({
                 success: true,
                 message: "OTP verified successfully",
@@ -126,6 +132,7 @@ export const verifyOtpController = async (req, res) => {
                 }
             });
         } else {
+            logger.error('Invalid OTP for number: ' + phone);
             res.status(400).json({
                 success: false,
                 message: "Invalid OTP",
@@ -134,6 +141,7 @@ export const verifyOtpController = async (req, res) => {
         }
     } catch (error) {
         console.error('Error in verifyOtpController:', error);
+        logger.error('Error in verifyOtpController: ' + error.message);
         res.status(500).json({
             success: false,
             message: "Internal server error"
