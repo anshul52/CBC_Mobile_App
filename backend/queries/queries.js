@@ -6,4 +6,5 @@ export const SQL_QUERIES = {
     MARK_OTP_VERIFIED: 'UPDATE otp_logs SET is_verified = TRUE WHERE id = ?',
     SELECT_USER: 'SELECT * FROM usersbase WHERE phone = ?',
     INSERT_USER: 'INSERT INTO usersbase (phone) VALUES (?)',
+    SELECT_USER_DETAILS: 'SELECT * FROM usersbase WHERE id = ?',
 };

@@ -4,6 +4,7 @@ import logger from '../utils/logger.js';
 import {executeQuery2} from '../config/db.js';
 import { LOG_MESSAGES, RESPONSE_MESSAGES } from '../constants/constants.js'; 
 import { SQL_QUERIES } from '../queries/queries.js';
+import JWT from 'jsonwebtoken';
 dotenv.config();
 
 // Initialize Twilio client
@@ -167,13 +168,21 @@ export const verifyOtpController = async (req, res) => {
                 logger.info(LOG_MESSAGES.EXISTING_USER_LOGGED_IN(phone));
             }
 
+            // Generate JWT token
+            const token = JWT.sign(
+                { _id: userId },
+                process.env.JWT_SECRET,
+                { expiresIn: "7d" }
+            );
+
             res.status(200).json({
                 success: true,
                 message: RESPONSE_MESSAGES.OTP_VERIFIED_SUCCESS,
                 user: {
                     id: userId,
                     phone: phone
-                }
+                },
+                token
             });
         } else {
             logger.error(LOG_MESSAGES.INVALID_OTP(phone));

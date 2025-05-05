@@ -11,6 +11,7 @@ export const LOG_MESSAGES = {
     ERROR_IN_VERIFY_OTP: (error) => `Error in verifyOtpController: ${error.message}`,
     TWILIO_ERROR: (error) => `Twilio Error: ${error.message}`,
     OTP_MESSAGE: (otp) => `Your OTP for registration is: ${otp}. Valid for 5 minutes.`, 
+    ERROR_IN_GET_USER: (error) => `Error in getUserController: ${error.message}`,
 };
 
 // Constants for response messages
@@ -29,4 +30,7 @@ export const RESPONSE_MESSAGES = {
     USER_CREATION_FAILED: "User creation failed",
     USER_LOGIN_FAILED: "User login failed",
     FAILED_TO_SEND_OTP: "Failed to send OTP",
+    USER_DETAILS_RETRIEVED_SUCCESSFULLY: "User details retrieved successfully",
+    USER_DETAILS_RETRIEVAL_FAILED: "User details retrieval failed",
+
 };
