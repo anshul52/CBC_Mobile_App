@@ -1,6 +1,9 @@
 import twilio from 'twilio';
 import dotenv from 'dotenv';
 import logger from '../utils/logger.js';
+import {executeQuery2} from '../config/db.js';
+import { LOG_MESSAGES, RESPONSE_MESSAGES } from '../constants/constants.js'; 
+import { SQL_QUERIES } from '../queries/queries.js';
 dotenv.config();
 
 // Initialize Twilio client
@@ -14,9 +17,6 @@ const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000);
 };
 
-// Store OTPs temporarily (in production, use a database)
-const otpStore = new Map();
-
 export const sendOtpController = async (req, res) => {
     try {
         const { phone } = req.body;
@@ -25,48 +25,47 @@ export const sendOtpController = async (req, res) => {
         if (!phone) {
             return res.status(400).json({
                 success: false,
-                message: "Please enter your phone number"
+                message: RESPONSE_MESSAGES.PHONE_REQUIRED
             });
         }
 
         // Generate OTP
         const otp = generateOTP();
         
-        // Store OTP with timestamp (valid for 5 minutes)
-        otpStore.set(phone, {
-            otp,
-            timestamp: Date.now(),
-            attempts: 0
-        });
+        // Store OTP in database (valid for 5 minutes)
+        const expiryTime = new Date(Date.now() + 5 * 60 * 1000);
+        
+        await executeQuery2(
+            SQL_QUERIES.INSERT_OTP,
+            [phone, otp, expiryTime]
+        );
 
         // Send OTP via Twilio
         try {
             await client.messages.create({
-                body: `Your OTP for registration is: ${otp}. Valid for 5 minutes.`,
+                body: LOG_MESSAGES.OTP_MESSAGE(otp),
                 from: process.env.TWILIO_PHONE_NUMBER,
                 to: phone
             });
-            logger.info('OTP sent successfully to ' + req.body.phone);
+            logger.info(LOG_MESSAGES.OTP_SENT_SUCCESS(phone));
             res.status(200).json({
                 success: true,
-                message: "OTP sent successfully"
+                message:  LOG_MESSAGES.OTP_SENT_SUCCESS(phone)
             });
         } catch (twilioError) {
-            console.error('Twilio Error:', twilioError);
-            logger.error('Error in sendOtpController: ' + twilioError.message);
+            logger.error(LOG_MESSAGES.TWILIO_ERROR(twilioError.message));
             res.status(500).json({
                 success: false,
-                message: "Failed to send OTP"
+                message: RESPONSE_MESSAGES.FAILED_TO_SEND_OTP
             });
         }
     } catch (error) {
-        console.error('Error in sendOtpController:', error);
-        logger.error('Error in sendOtpController: ' + error.message);
+        logger.error(LOG_MESSAGES.ERROR_IN_SEND_OTP(error));
         res.status(500).json({
             success: false,
-            message: "Internal server error"
+            message: RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
         });
-    }
+    }  
 };
 
 export const verifyOtpController = async (req, res) => {
@@ -77,74 +76,118 @@ export const verifyOtpController = async (req, res) => {
         if (!phone || !otp) {
             return res.status(400).json({
                 success: false,
-                message: "Phone and OTP are required"
+                message: RESPONSE_MESSAGES.PHONE_REQUIRED
             });
         }
 
-        // Get stored OTP data
-        const storedData = otpStore.get(phone);
+        // Get latest OTP record
+        const otpRecords = await executeQuery2( 
+               SQL_QUERIES.SELECT_LATEST_OTP,
+            [phone]
+        );
 
         // Check if OTP exists
-        if (!storedData) {
-            logger.error('No OTP found for this number: ' + phone);
+        if (!otpRecords || otpRecords.length === 0) {
+            logger.error(LOG_MESSAGES.NO_OTP_FOUND(phone));
             return res.status(400).json({
                 success: false,
-                message: "No OTP found for this number"
+                message: LOG_MESSAGES.NO_OTP_FOUND(phone)
             });
         }
 
-        // Check if OTP is expired (5 minutes)
-        if (Date.now() - storedData.timestamp > 5 * 60 * 1000) {
-            otpStore.delete(phone);
-            logger.error('OTP has expired for this number: ' + phone);
+        const otpRecord = otpRecords[0];
+
+        // Check if OTP is expired
+        if (new Date() > new Date(otpRecord.expires_at)) {
+            logger.error(LOG_MESSAGES.OTP_EXPIRED(phone));
+            // Delete the expired OTP record
+            await executeQuery2(
+                SQL_QUERIES.DELETE_OTP,
+                [otpRecord.id]
+            );
             return res.status(400).json({
                 success: false,
-                message: "OTP has expired"
+                message: LOG_MESSAGES.OTP_EXPIRED(phone)
             });
         }
-
-        // Increment attempts
-        storedData.attempts += 1;
 
         // Check max attempts (3)
-        if (storedData.attempts >= 3) {
-            otpStore.delete(phone);
-            logger.error('Max attempts reached for this number: ' + phone);
+        if (otpRecord.attempts >= 3) {
+            logger.error(LOG_MESSAGES.MAX_ATTEMPTS_REACHED(phone));
+            // Delete the OTP record after max attempts
+            await executeQuery2(
+                SQL_QUERIES.DELETE_OTP,
+                [otpRecord.id]
+            );
             return res.status(400).json({
                 success: false,
-                message: "Max attempts reached. Please request new OTP"
+                message: LOG_MESSAGES.MAX_ATTEMPTS_REACHED(phone)
             });
         }
 
-        // Verify OTP
-        if (storedData.otp.toString() === otp.toString()) {
-            // OTP verified successfully
-            otpStore.delete(phone); // Clear OTP data
+        // Update attempts
+        await executeQuery2(
+            SQL_QUERIES.UPDATE_ATTEMPTS,
+            [otpRecord.id]
+        );
 
-            // Here you would typically save the user to your database
-            // For now, just return success
-            logger.info('OTP verified successfully for number: ' + phone);
+        // Verify OTP
+        if (otpRecord.otp === otp) {
+            // Mark OTP as verified 
+            await executeQuery2(
+                SQL_QUERIES.MARK_OTP_VERIFIED,
+                [otpRecord.id]
+            );
+
+            // Delete the OTP record after successful verification
+            await executeQuery2(
+                SQL_QUERIES.DELETE_OTP,
+                [otpRecord.id]
+            );
+
+            // Check if user exists
+            const users = await executeQuery2(
+                SQL_QUERIES.SELECT_USER,
+                [phone]
+            );
+
+            let userId;
+
+            // Check if user exists
+            if (!users || users.length === 0) {
+                // Create new user
+                const result = await executeQuery2(
+                    SQL_QUERIES.INSERT_USER,
+                    [phone]
+                );
+                userId = result.insertId;
+                logger.info(LOG_MESSAGES.NEW_USER_CREATED(phone));
+            } else {
+                userId = users[0].id;
+                logger.info(LOG_MESSAGES.EXISTING_USER_LOGGED_IN(phone));
+            }
+
             res.status(200).json({
                 success: true,
-                message: "OTP verified successfully",
+                message: RESPONSE_MESSAGES.OTP_VERIFIED_SUCCESS,
                 user: {
+                    id: userId,
                     phone: phone
                 }
             });
         } else {
-            logger.error('Invalid OTP for number: ' + phone);
+            logger.error(LOG_MESSAGES.INVALID_OTP(phone));
             res.status(400).json({
                 success: false,
-                message: "Invalid OTP",
-                remainingAttempts: 3 - storedData.attempts
+                message: RESPONSE_MESSAGES.INVALID_OTP_MESSAGE,
+                remainingAttempts: 2 - otpRecord.attempts
             });
         }
     } catch (error) {
-        console.error('Error in verifyOtpController:', error);
-        logger.error('Error in verifyOtpController: ' + error.message);
+        logger.error(LOG_MESSAGES.ERROR_IN_VERIFY_OTP(error));
         res.status(500).json({
             success: false,
-            message: "Internal server error"
+            message: RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
         });
     }
 };
