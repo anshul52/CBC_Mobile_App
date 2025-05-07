@@ -12,6 +12,8 @@ export const LOG_MESSAGES = {
     TWILIO_ERROR: (error) => `Twilio Error: ${error.message}`,
     OTP_MESSAGE: (otp) => `Your OTP for registration is: ${otp}. Valid for 5 minutes.`, 
     ERROR_IN_GET_USER: (error) => `Error in getUserController: ${error.message}`,
+    USER_NOT_FOUND: (phone) => `User not found for phone: ${phone}`,
+    USER_FOUND: (phone) => `User found for phone: ${phone}`,
 };
 
 // Constants for response messages

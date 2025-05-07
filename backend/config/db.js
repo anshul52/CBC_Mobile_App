@@ -14,9 +14,16 @@ export const pool = mysql.createPool({
 });
 
  
-
+// check db is connected or not
+pool.getConnection((err, connection) => {
+    if (err) {
+        console.error('Error connecting to the database:', err);
+    } else {
+        console.log('Connected to the database');
+    }
+});
 export async function executeQuery2(query, params = []) {
-    const promisePool = pool.promise();
+    const promisePool = pool.promise(); 
     try {
       const [results] = await promisePool.query(query, params);
       return results;
