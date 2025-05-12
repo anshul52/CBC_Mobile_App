@@ -38,13 +38,13 @@ export const getSportDetailsFacilityWiseController = async (req, res) => {
     if (sportDetails && sportDetails.length > 0) {
       res.status(200).json({
         success: true,
-        message: "Sports details retrieved successfully",
+        message: RESPONSE_MESSAGES.SPORTS_DETAILS_RETRIEVED_SUCCESSFULLY,
         sportDetails: sportDetails,
       });
     } else {
       res.status(404).json({
         success: false,
-        message: "Sports details not found",
+        message: RESPONSE_MESSAGES.SPORTS_DETAILS_NOT_FOUND,
       });
     }
   } catch (error) {
@@ -67,13 +67,13 @@ export const getSportsDetailsDayWiseController = async (req, res) => {
     if (sportDetails && sportDetails.length > 0) {
       res.status(200).json({
         success: true,
-        message: "Sports details retrieved successfully",
+        message: RESPONSE_MESSAGES.SPORTS_RETRIEVED_SUCCESSFULLY,
         sportDetails: sportDetails,
       });
     } else {
       res.status(404).json({
         success: false,
-        message: "Sports details not found",
+        message: RESPONSE_MESSAGES.SPORTS_DETAILS_NOT_FOUND,
       });
     }
   } catch (error) {

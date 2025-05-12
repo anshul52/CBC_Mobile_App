@@ -38,4 +38,7 @@ export const RESPONSE_MESSAGES = {
     SPORTS_RETRIEVED_SUCCESSFULLY: "Sports retrieved successfully",
     SPORTS_RETRIEVAL_FAILED: "Sports retrieval failed",
     SPORTS_NOT_FOUND: "Sports not found",
+    SPORTS_DETAILS_RETRIEVED_SUCCESSFULLY: "Sports details retrieved successfully",
+    SPORTS_DETAILS_RETRIEVAL_FAILED: "Sports details retrieval failed",
+    SPORTS_DETAILS_NOT_FOUND: "Sports details not found",
 };
