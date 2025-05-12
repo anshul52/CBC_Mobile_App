@@ -14,6 +14,7 @@ export const LOG_MESSAGES = {
     ERROR_IN_GET_USER: (error) => `Error in getUserController: ${error.message}`,
     USER_NOT_FOUND: (phone) => `User not found for phone: ${phone}`,
     USER_FOUND: (phone) => `User found for phone: ${phone}`,
+    ERROR_IN_GET_SPORTS: (error) => `Error in getSportsController: ${error.message}`,
 };
 
 // Constants for response messages
@@ -34,5 +35,7 @@ export const RESPONSE_MESSAGES = {
     FAILED_TO_SEND_OTP: "Failed to send OTP",
     USER_DETAILS_RETRIEVED_SUCCESSFULLY: "User details retrieved successfully",
     USER_DETAILS_RETRIEVAL_FAILED: "User details retrieval failed",
-
+    SPORTS_RETRIEVED_SUCCESSFULLY: "Sports retrieved successfully",
+    SPORTS_RETRIEVAL_FAILED: "Sports retrieval failed",
+    SPORTS_NOT_FOUND: "Sports not found",
 };
