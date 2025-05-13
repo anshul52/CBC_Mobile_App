@@ -176,11 +176,7 @@ export const eachFacilityWiseSportsDetailsController = async (req, res) => {
     
 
     if (rows && rows.length > 0) {
-      res.status(200).json({
-        success: true,
-        message: RESPONSE_MESSAGES.SPORTS_DETAILS_RETRIEVED_SUCCESSFULLY,
-        result: result,
-      });
+      res.status(200).json(result);
     } else {
       res.status(404).json({
         success: false,
