@@ -68,6 +68,7 @@ export const sendOtpController = async (req, res) => {
     } catch (twilioError) {
       logger.error(LOG_MESSAGES.TWILIO_ERROR(twilioError.message));
       //return failed to send otp
+      console.log(twilioError);
       res.status(500).json({
         success: false,
         message: RESPONSE_MESSAGES.FAILED_TO_SEND_OTP,
