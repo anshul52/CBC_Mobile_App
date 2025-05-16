@@ -60,31 +60,71 @@ export const getSportDetailsFacilityWiseController = async (req, res) => {
 export const getSportsDetailsDayWiseAndFacilityWiseController = async (req, res) => {
   try {
     const { day, facilityId } = req.query;
-    const sportDetails = await executeQuery2(
+
+    const rows = await executeQuery2(
       SPORTS_QUERIES.SELECT_SPORTS_DETAILS_DAY_WISE_AND_FACILITY_WISE,
       [day, facilityId]
     );
-    if (sportDetails && sportDetails.length > 0) {
-      res.status(200).json({
-        success: true,
-        message: RESPONSE_MESSAGES.SPORTS_RETRIEVED_SUCCESSFULLY,
-        sportDetails: sportDetails,
-      });
-    } else {
-      res.status(404).json({
+
+    if (!rows || rows.length === 0) {
+      return res.status(404).json({
         success: false,
         message: RESPONSE_MESSAGES.SPORTS_DETAILS_NOT_FOUND,
       });
     }
+
+    const facility = {
+      facility_id: rows[0].facility_id,
+      facility_name: rows[0].facility_name,
+      day_type_id: rows[0].day_type_id,
+      day_type_name: rows[0].day_type_name,
+      day: rows[0].day,
+      open_time: rows[0].open_time,
+      close_time: rows[0].close_time,
+      pricing_rules: [],
+      equipment_rentals: []
+    };
+
+    const rentalMap = new Map();
+
+    rows.forEach(row => {
+      // Push pricing rules if valid
+      if (row.pricing_start_time && row.pricing_end_time) {
+        facility.pricing_rules.push({
+          start_time: row.pricing_start_time,
+          end_time: row.pricing_end_time,
+          price: row.price,
+          unit: row.unit
+        });
+      }
+
+      // Avoid duplicate rental items
+      if (row.rental_item && !rentalMap.has(row.rental_item)) {
+        rentalMap.set(row.rental_item, {
+          item_name: row.rental_item,
+          price: row.rental_price
+        });
+      }
+    });
+
+    facility.equipment_rentals = Array.from(rentalMap.values());
+
+    return res.status(200).json({
+      success: true,
+      message: RESPONSE_MESSAGES.SPORTS_RETRIEVED_SUCCESSFULLY,
+      sportDetails: facility
+    });
+
   } catch (error) {
     logger.error(LOG_MESSAGES.ERROR_IN_GET_SPORTS(error));
-    console.log(error);
-    res.status(500).json({
+    console.error(error);
+    return res.status(500).json({
       success: false,
       message: RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
     });
   }
 };
+
 
 export const eachFacilityWiseSportsDetailsController = async (req, res) => {
   try {
