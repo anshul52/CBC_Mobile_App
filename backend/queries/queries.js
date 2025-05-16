@@ -30,7 +30,7 @@ export const SPORTS_QUERIES = {
   WHERE f.name = 'Badminton Courts'
   ORDER BY p.start_time
     `,
-  SELECT_SPORTS_DETAILS_DAY_WISE: `
+  SELECT_SPORTS_DETAILS_DAY_WISE_AND_FACILITY_WISE: `
   SELECT
   f.id AS facility_id,
   f.name AS facility_name,
@@ -51,7 +51,7 @@ export const SPORTS_QUERIES = {
   JOIN day_type_days dtd ON dt.id = dtd.day_type_id
   LEFT JOIN pricing_rules pr ON f.id = pr.facility_id AND pr.day_type_id = dt.id
   LEFT JOIN equipment_rentals er ON f.id = er.facility_id
-  WHERE dtd.weekday = ?
+  WHERE dtd.weekday = ? AND f.id = ?
     `,
   SELECT_SPORTS_DETAILS_FACILITY_WISE: `SELECT 
   oh.id,

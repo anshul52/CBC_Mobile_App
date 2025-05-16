@@ -57,12 +57,12 @@ export const getSportDetailsFacilityWiseController = async (req, res) => {
   }
 };
 
-export const getSportsDetailsDayWiseController = async (req, res) => {
+export const getSportsDetailsDayWiseAndFacilityWiseController = async (req, res) => {
   try {
-    const { day } = req.query;
+    const { day, facilityId } = req.query;
     const sportDetails = await executeQuery2(
-      SPORTS_QUERIES.SELECT_SPORTS_DETAILS_DAY_WISE,
-      [day]
+      SPORTS_QUERIES.SELECT_SPORTS_DETAILS_DAY_WISE_AND_FACILITY_WISE,
+      [day, facilityId]
     );
     if (sportDetails && sportDetails.length > 0) {
       res.status(200).json({
