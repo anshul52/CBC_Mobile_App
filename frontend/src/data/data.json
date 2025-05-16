@@ -1,0 +1,428 @@
+{
+  "success": true,
+  "message": "Facility details retrieved successfully",
+  "facilities": [
+    {
+      "facility_id": 1,
+      "facility_name": "Badminton Court",
+      "operating_hours": [
+        {
+          "day_type_id": 1,
+          "day_type_name": "Mon-Thu",
+          "open_time": "08:00:00",
+          "close_time": "22:00:00"
+        },
+        {
+          "day_type_id": 2,
+          "day_type_name": "Fri/Sun/PH",
+          "open_time": "08:00:00",
+          "close_time": "22:00:00"
+        },
+        {
+          "day_type_id": 3,
+          "day_type_name": "Sat/Eve of PH",
+          "open_time": "08:00:00",
+          "close_time": "23:00:00"
+        }
+      ],
+      "pricing_rules": [
+        {
+          "day_type_id": 1,
+          "day_type_name": "Mon-Thu",
+          "start_time": "08:00:00",
+          "end_time": "18:00:00",
+          "price": "0.00",
+          "unit": "hour"
+        },
+        {
+          "day_type_id": 1,
+          "day_type_name": "Mon-Thu",
+          "start_time": "18:00:00",
+          "end_time": "22:00:00",
+          "price": "6.00",
+          "unit": "hour"
+        },
+        {
+          "day_type_id": 2,
+          "day_type_name": "Fri/Sun/PH",
+          "start_time": "08:00:00",
+          "end_time": "22:00:00",
+          "price": "6.00",
+          "unit": "hour"
+        },
+        {
+          "day_type_id": 3,
+          "day_type_name": "Sat/Eve of PH",
+          "start_time": "08:00:00",
+          "end_time": "23:00:00",
+          "price": "6.00",
+          "unit": "hour"
+        }
+      ],
+      "equipment_rentals": []
+    },
+    {
+      "facility_id": 2,
+      "facility_name": "Squash Court",
+      "operating_hours": [
+        {
+          "day_type_id": 1,
+          "day_type_name": "Mon-Thu",
+          "open_time": "08:00:00",
+          "close_time": "22:00:00"
+        },
+        {
+          "day_type_id": 2,
+          "day_type_name": "Fri/Sun/PH",
+          "open_time": "08:00:00",
+          "close_time": "22:00:00"
+        },
+        {
+          "day_type_id": 3,
+          "day_type_name": "Sat/Eve of PH",
+          "open_time": "08:00:00",
+          "close_time": "23:00:00"
+        }
+      ],
+      "pricing_rules": [
+        {
+          "day_type_id": 1,
+          "day_type_name": "Mon-Thu",
+          "start_time": "08:00:00",
+          "end_time": "18:00:00",
+          "price": "0.00",
+          "unit": "hour"
+        },
+        {
+          "day_type_id": 1,
+          "day_type_name": "Mon-Thu",
+          "start_time": "18:00:00",
+          "end_time": "22:00:00",
+          "price": "4.00",
+          "unit": "hour"
+        },
+        {
+          "day_type_id": 2,
+          "day_type_name": "Fri/Sun/PH",
+          "start_time": "08:00:00",
+          "end_time": "22:00:00",
+          "price": "4.00",
+          "unit": "hour"
+        },
+        {
+          "day_type_id": 3,
+          "day_type_name": "Sat/Eve of PH",
+          "start_time": "08:00:00",
+          "end_time": "23:00:00",
+          "price": "4.00",
+          "unit": "hour"
+        }
+      ],
+      "equipment_rentals": []
+    },
+    {
+      "facility_id": 3,
+      "facility_name": "Tennis Court",
+      "operating_hours": [
+        {
+          "day_type_id": 1,
+          "day_type_name": "Mon-Thu",
+          "open_time": "08:00:00",
+          "close_time": "22:00:00"
+        },
+        {
+          "day_type_id": 2,
+          "day_type_name": "Fri/Sun/PH",
+          "open_time": "08:00:00",
+          "close_time": "22:00:00"
+        },
+        {
+          "day_type_id": 3,
+          "day_type_name": "Sat/Eve of PH",
+          "open_time": "08:00:00",
+          "close_time": "23:00:00"
+        }
+      ],
+      "pricing_rules": [
+        {
+          "day_type_id": 1,
+          "day_type_name": "Mon-Thu",
+          "start_time": "08:00:00",
+          "end_time": "18:00:00",
+          "price": "0.00",
+          "unit": "hour"
+        },
+        {
+          "day_type_id": 1,
+          "day_type_name": "Mon-Thu",
+          "start_time": "18:00:00",
+          "end_time": "22:00:00",
+          "price": "6.00",
+          "unit": "hour"
+        },
+        {
+          "day_type_id": 2,
+          "day_type_name": "Fri/Sun/PH",
+          "start_time": "08:00:00",
+          "end_time": "22:00:00",
+          "price": "6.00",
+          "unit": "hour"
+        },
+        {
+          "day_type_id": 3,
+          "day_type_name": "Sat/Eve of PH",
+          "start_time": "08:00:00",
+          "end_time": "23:00:00",
+          "price": "6.00",
+          "unit": "hour"
+        }
+      ],
+      "equipment_rentals": []
+    },
+    {
+      "facility_id": 4,
+      "facility_name": "Gym",
+      "operating_hours": [
+        {
+          "day_type_id": 4,
+          "day_type_name": "Mon-Fri/Sun/PH",
+          "open_time": "08:00:00",
+          "close_time": "22:00:00"
+        },
+        {
+          "day_type_id": 5,
+          "day_type_name": "Sat/Eve",
+          "open_time": "08:00:00",
+          "close_time": "23:00:00"
+        }
+      ],
+      "pricing_rules": [
+        {
+          "day_type_id": 4,
+          "day_type_name": "Mon-Fri/Sun/PH",
+          "start_time": "08:00:00",
+          "end_time": "22:00:00",
+          "price": "0.00",
+          "unit": "entry"
+        },
+        {
+          "day_type_id": 5,
+          "day_type_name": "Sat/Eve",
+          "start_time": "08:00:00",
+          "end_time": "23:00:00",
+          "price": "0.00",
+          "unit": "entry"
+        }
+      ],
+      "equipment_rentals": []
+    },
+    {
+      "facility_id": 5,
+      "facility_name": "Dancing Studio",
+      "operating_hours": [
+        {
+          "day_type_id": 4,
+          "day_type_name": "Mon-Fri/Sun/PH",
+          "open_time": "08:00:00",
+          "close_time": "22:00:00"
+        },
+        {
+          "day_type_id": 5,
+          "day_type_name": "Sat/Eve",
+          "open_time": "08:00:00",
+          "close_time": "23:00:00"
+        }
+      ],
+      "pricing_rules": [
+        {
+          "day_type_id": 4,
+          "day_type_name": "Mon-Fri/Sun/PH",
+          "start_time": "08:00:00",
+          "end_time": "22:00:00",
+          "price": "20.00",
+          "unit": "hour"
+        },
+        {
+          "day_type_id": 5,
+          "day_type_name": "Sat/Eve",
+          "start_time": "08:00:00",
+          "end_time": "23:00:00",
+          "price": "20.00",
+          "unit": "hour"
+        }
+      ],
+      "equipment_rentals": []
+    },
+    {
+      "facility_id": 6,
+      "facility_name": "Bowling Centre",
+      "operating_hours": [
+        {
+          "day_type_id": 7,
+          "day_type_name": "Tue-Fri/Sun/PH",
+          "open_time": "15:00:00",
+          "close_time": "22:00:00"
+        },
+        {
+          "day_type_id": 3,
+          "day_type_name": "Sat/Eve of PH",
+          "open_time": "08:00:00",
+          "close_time": "23:00:00"
+        }
+      ],
+      "pricing_rules": [
+        {
+          "day_type_id": 7,
+          "day_type_name": "Tue-Fri/Sun/PH",
+          "start_time": "15:00:00",
+          "end_time": "22:00:00",
+          "price": "3.00",
+          "unit": "hour"
+        },
+        {
+          "day_type_id": 3,
+          "day_type_name": "Sat/Eve of PH",
+          "start_time": "08:00:00",
+          "end_time": "23:00:00",
+          "price": "3.00",
+          "unit": "game"
+        }
+      ],
+      "equipment_rentals": [
+        {
+          "item_name": "Shoes",
+          "price": "1.00"
+        },
+        {
+          "item_name": "Socks",
+          "price": "3.00"
+        }
+      ]
+    },
+    {
+      "facility_id": 7,
+      "facility_name": "Billard Room",
+      "operating_hours": [
+        {
+          "day_type_id": 6,
+          "day_type_name": "Tue-Thu",
+          "open_time": "15:00:00",
+          "close_time": "22:00:00"
+        },
+        {
+          "day_type_id": 2,
+          "day_type_name": "Fri/Sun/PH",
+          "open_time": "08:00:00",
+          "close_time": "22:00:00"
+        },
+        {
+          "day_type_id": 3,
+          "day_type_name": "Sat/Eve of PH",
+          "open_time": "08:00:00",
+          "close_time": "23:00:00"
+        }
+      ],
+      "pricing_rules": [
+        {
+          "day_type_id": 6,
+          "day_type_name": "Tue-Thu",
+          "start_time": "15:00:00",
+          "end_time": "18:00:00",
+          "price": "0.00",
+          "unit": "hour"
+        },
+        {
+          "day_type_id": 6,
+          "day_type_name": "Tue-Thu",
+          "start_time": "18:00:00",
+          "end_time": "22:00:00",
+          "price": "4.00",
+          "unit": "hour"
+        },
+        {
+          "day_type_id": 2,
+          "day_type_name": "Fri/Sun/PH",
+          "start_time": "08:00:00",
+          "end_time": "22:00:00",
+          "price": "4.00",
+          "unit": "hour"
+        },
+        {
+          "day_type_id": 3,
+          "day_type_name": "Sat/Eve of PH",
+          "start_time": "08:00:00",
+          "end_time": "23:00:00",
+          "price": "4.00",
+          "unit": "hour"
+        }
+      ],
+      "equipment_rentals": []
+    },
+    {
+      "facility_id": 8,
+      "facility_name": "Table Tennis Room",
+      "operating_hours": [
+        {
+          "day_type_id": 6,
+          "day_type_name": "Tue-Thu",
+          "open_time": "15:00:00",
+          "close_time": "22:00:00"
+        },
+        {
+          "day_type_id": 2,
+          "day_type_name": "Fri/Sun/PH",
+          "open_time": "08:00:00",
+          "close_time": "22:00:00"
+        },
+        {
+          "day_type_id": 3,
+          "day_type_name": "Sat/Eve of PH",
+          "open_time": "08:00:00",
+          "close_time": "23:00:00"
+        }
+      ],
+      "pricing_rules": [
+        {
+          "day_type_id": 6,
+          "day_type_name": "Tue-Thu",
+          "start_time": "15:00:00",
+          "end_time": "18:00:00",
+          "price": "0.00",
+          "unit": "hour"
+        },
+        {
+          "day_type_id": 6,
+          "day_type_name": "Tue-Thu",
+          "start_time": "18:00:00",
+          "end_time": "22:00:00",
+          "price": "4.00",
+          "unit": "hour"
+        },
+        {
+          "day_type_id": 2,
+          "day_type_name": "Fri/Sun/PH",
+          "start_time": "08:00:00",
+          "end_time": "22:00:00",
+          "price": "4.00",
+          "unit": "hour"
+        },
+        {
+          "day_type_id": 3,
+          "day_type_name": "Sat/Eve of PH",
+          "start_time": "08:00:00",
+          "end_time": "23:00:00",
+          "price": "4.00",
+          "unit": "hour"
+        }
+      ],
+      "equipment_rentals": []
+    },
+    {
+      "facility_id": 9,
+      "facility_name": "Swimming Pool",
+      "operating_hours": [],
+      "pricing_rules": [],
+      "equipment_rentals": []
+    }
+  ]
+}
