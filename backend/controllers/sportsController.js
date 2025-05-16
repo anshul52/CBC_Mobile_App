@@ -91,26 +91,7 @@ export const eachFacilityWiseSportsDetailsController = async (req, res) => {
     
 
 
-    const rows = await executeQuery2(`
-      SELECT
-        f.id AS facility_id,
-        f.name AS facility_name,
-        dt.id AS day_type_id,
-        dt.name AS day_type_name,
-        oh.open_time,
-        oh.close_time,
-        pr.start_time AS pricing_start_time,
-        pr.end_time AS pricing_end_time,
-        pr.price,
-        pr.unit,
-        er.item_name,
-        er.price AS rental_price
-      FROM facilities f
-      LEFT JOIN operating_hours oh ON f.id = oh.facility_id
-      LEFT JOIN day_types dt ON oh.day_type_id = dt.id
-      LEFT JOIN pricing_rules pr ON f.id = pr.facility_id AND dt.id = pr.day_type_id
-      LEFT JOIN equipment_rentals er ON f.id = er.facility_id
-    `);
+    const rows = await executeQuery2(SPORTS_QUERIES.SELECT_SPORTS_DETAILS_FACILITY_WISE);
     
     const facilityMap = {};
     
@@ -188,3 +169,23 @@ export const eachFacilityWiseSportsDetailsController = async (req, res) => {
     console.log(error);
   }
 };
+
+export const getAllFacilitiesController = async (req, res) => {
+  try {
+    const rows = await executeQuery2(SPORTS_QUERIES.SELECT_ALL_FACILITIES);
+    res.status(200).json({
+      success: true,
+      message: RESPONSE_MESSAGES.FACILITIES_RETRIEVED_SUCCESSFULLY,
+      facilities: rows
+    });
+    
+  } catch (error) {
+    logger.error(LOG_MESSAGES.ERROR_IN_GET_FACILITIES(error));
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+    });
+  }
+};
+
