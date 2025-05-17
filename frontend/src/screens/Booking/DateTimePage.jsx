@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -10,137 +10,236 @@ import {
   StatusBar,
   ImageBackground,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Back from '../../assets/Booking/Back.svg';
 import {useNavigation} from '@react-navigation/native';
 import CalendarComponent from '../../component/DateTimePageCompo/CalendarComponent';
 
 const DateTimePage = ({route}) => {
   const navigation = useNavigation();
-  const {facility} = route.params;
-  const [selectedDate, setSelectedDate] = useState(16);
-  const [startTime, setStartTime] = useState('9 AM');
-  const [endTime, setEndTime] = useState('11 AM');
+  const [selectedDate, setSelectedDate] = useState(new Date().getDate());
+  const [startTime, setStartTime] = useState('08:00 AM');
+  const [endTime, setEndTime] = useState('09:00 AM');
   const [showStartTimeDropdown, setShowStartTimeDropdown] = useState(false);
   const [showEndTimeDropdown, setShowEndTimeDropdown] = useState(false);
+  const [availableEndTimes, setAvailableEndTimes] = useState([]);
+  const [facilityDetails, setFacilityDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showPriceSummary, setShowPriceSummary] = useState(false);
+  const [priceSummary, setPriceSummary] = useState({
+    freeHours: 0,
+    paidHours: 0,
+    totalAmount: 0
+  });
 
-  const renderCalendarDays = () => {
-    const days = [];
-    const daysInMonth = 31;
-    const currentMonth = 'May 2025';
+  const timeSlots = [
+    '12:00 AM', '1:00 AM', '2:00 AM', '3:00 AM', '4:00 AM', '5:00 AM',
+    '6:00 AM', '7:00 AM', '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM',
+    '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM',
+    '6:00 PM', '7:00 PM', '8:00 PM', '9:00 PM', '10:00 PM', '11:00 PM'
+  ];
 
-    // Days of the week
-    const daysOfWeek = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  // Convert 24h time to 12h format
+  const convertTo12Hour = (time24) => {
+    const [hours, minutes] = time24.split(':');
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const hours12 = hours % 12 || 12;
+    return `${hours12}:${minutes} ${period}`;
+  };
 
-    // Render days of week header
-    const dayHeaders = daysOfWeek.map((day, index) => (
-      <View key={`header-${index}`} style={styles.calendarCell}>
-        <Text style={styles.dayOfWeekText}>{day}</Text>
-      </View>
-    ));
+  // Convert 12h time to 24h format
+  const convertTo24Hour = (time12) => {
+    const [time, period] = time12.split(' ');
+    let [hours, minutes] = time.split(':');
+    hours = parseInt(hours);
+    
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    
+    return `${hours.toString().padStart(2, '0')}:${minutes}:00`;
+  };
 
-    days.push(
-      <View key="header-row" style={styles.calendarRow}>
-        {dayHeaders}
-      </View>,
-    );
+  // Get day name from date
+  const getDayName = (date) => {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return days[date.getDay()];
+  };
 
-    // Calendar grid - simplified for this example
-    const calendarData = [
-      [null, null, null, 1, 2, 3, 4],
-      [5, 6, 7, 8, 9, 10, 11],
-      [12, 13, 14, 15, 16, 17, 18],
-      [19, 20, 21, 22, 23, 24, 25],
-      [26, 27, 28, null, null, null, null],
-    ];
+  const fetchFacilities = async (selectedDay) => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) {
+        console.warn('No token found');
+        return;
+      }
 
-    calendarData.forEach((week, weekIndex) => {
-      const weekRow = week.map((day, dayIndex) => {
-        if (day === null) {
-          return (
-            <View
-              key={`empty-${weekIndex}-${dayIndex}`}
-              style={styles.calendarCell}
-            />
-          );
-        }
+      const facilityId = 1; // Default facility ID for testing
+      setLoading(true);
 
-        const isSelected = day === selectedDate;
-        const isHighlighted = day === 5; // Day with orange underline
-
-        return (
-          <TouchableOpacity
-            key={`day-${day}`}
-            style={styles.calendarCell}
-            onPress={() => setSelectedDate(day)}>
-            <View style={[isSelected && styles.selectedDateCircle]}>
-              <Text
-                style={[
-                  styles.calendarDayText,
-                  isSelected && styles.selectedDateText,
-                ]}>
-                {day}
-              </Text>
-            </View>
-            {isHighlighted && <View style={styles.highlightedLine} />}
-          </TouchableOpacity>
-        );
-      });
-
-      days.push(
-        <View key={`week-${weekIndex}`} style={styles.calendarRow}>
-          {weekRow}
-        </View>,
+      const response = await fetch(
+        `http://10.0.2.2:8085/api/sports/sports-details-day-wise-and-facility-wise?day=${selectedDay}&facilityId=${facilityId}`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setFacilityDetails(data);
+        // Reset times when facility details change
+        if (data.sportDetails) {
+          setStartTime(convertTo12Hour(data.sportDetails.open_time));
+          setEndTime(convertTo12Hour(data.sportDetails.open_time.replace('00:', '01:')));
+        }
+      } else {
+        console.error('Failed to fetch:', data.message);
+      }
+    } catch (error) {
+      console.error('Error fetching facilities:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle date selection
+  const handleDateSelection = (date) => {
+    setSelectedDate(date);
+    const selectedDayName = getDayName(new Date(2024, 4, date)); // Using May 2024 as example
+    fetchFacilities(selectedDayName);
+  };
+
+  // Check if time slot is free
+  const isTimeSlotFree = (time24) => {
+    if (!facilityDetails?.sportDetails?.pricing_rules) return false;
+    const hour = parseInt(time24.split(':')[0]);
+    
+    const freeRule = facilityDetails.sportDetails.pricing_rules.find(r => {
+      const startHour = parseInt(r.start_time.split(':')[0]);
+      const endHour = parseInt(r.end_time.split(':')[0]);
+      return hour >= startHour && hour < endHour && parseFloat(r.price) === 0;
     });
+    
+    return !!freeRule;
+  };
+
+  // Get price for a specific hour
+  const getPriceForHour = (hour) => {
+    const rule = facilityDetails.sportDetails.pricing_rules.find(r => {
+      const startHour = parseInt(r.start_time.split(':')[0]);
+      const endHour = parseInt(r.end_time.split(':')[0]);
+      return hour >= startHour && hour < endHour;
+    });
+    return rule ? parseFloat(rule.price) : 0;
+  };
+
+  // Generate time slots based on facility hours
+  useEffect(() => {
+    if (facilityDetails?.sportDetails) {
+      const { open_time, close_time } = facilityDetails.sportDetails;
+      const startHour = parseInt(open_time.split(':')[0]);
+      const endHour = parseInt(close_time.split(':')[0]);
+      
+      const slots = [];
+      for (let hour = startHour; hour < endHour; hour++) {
+        const time24 = `${hour.toString().padStart(2, '0')}:00:00`;
+        slots.push(convertTo12Hour(time24));
+      }
+      setAvailableEndTimes(slots);
+    }
+  }, [facilityDetails]);
+
+  // Auto calculate price when end time changes
+  useEffect(() => {
+    if (startTime && endTime) {
+      calculatePrice();
+    }
+  }, [endTime]);
+
+  // Filter available end times based on start time
+  const getFilteredEndTimes = () => {
+    const startHour = parseInt(convertTo24Hour(startTime).split(':')[0]);
+    return availableEndTimes.filter(time => {
+      const hour = parseInt(convertTo24Hour(time).split(':')[0]);
+      return hour > startHour;
+    });
+  };
+
+  // Calculate price for selected time slot
+  const calculatePrice = () => {
+    if (!facilityDetails) return;
+
+    const start24 = convertTo24Hour(startTime);
+    const end24 = convertTo24Hour(endTime);
+    
+    let freeHours = 0;
+    let paidHours = 0;
+    let totalAmount = 0;
+
+    // Calculate hours between start and end time
+    const startHour = parseInt(start24.split(':')[0]);
+    const endHour = parseInt(end24.split(':')[0]);
+
+    for (let hour = startHour; hour < endHour; hour++) {
+      const price = getPriceForHour(hour);
+      if (price === 0) {
+        freeHours++;
+      } else {
+        paidHours++;
+        totalAmount += price;
+      }
+    }
+
+    setPriceSummary({
+      freeHours,
+      paidHours,
+      totalAmount
+    });
+    setShowPriceSummary(true);
+  };
+
+  // Render time slot with free tag and price
+  const renderTimeSlot = (time, isSelected, onPress) => {
+    const time24 = convertTo24Hour(time);
+    const hour = parseInt(time24.split(':')[0]);
+    const isFree = isTimeSlotFree(time24);
+    const price = getPriceForHour(hour);
 
     return (
-      <View style={styles.calendarContainer}>
-        <View style={styles.calendarHeader}>
-          <TouchableOpacity>
-            {/* <Ionicons name="chevron-back" size={24} color="#333" /> */}
-          </TouchableOpacity>
-          <Text style={styles.monthText}>{currentMonth}</Text>
-          <TouchableOpacity>
-            {/* <Ionicons name="chevron-forward" size={24} color="#333" /> */}
-          </TouchableOpacity>
+      <TouchableOpacity
+        key={time}
+        style={[
+          styles.timeOption,
+          isSelected && styles.selectedTimeOption
+        ]}
+        onPress={onPress}>
+        <View style={styles.timeSlotContent}>
+          <Text style={[
+            styles.timeText,
+            isSelected && styles.selectedTimeText
+          ]}>
+            {time}
+          </Text>
+          {isFree ? (
+            <View style={styles.freeTag}>
+              <Text style={styles.freeTagText}>Free</Text>
+            </View>
+          ) : (
+            <Text style={styles.priceText}>£{price.toFixed(2)}/hr</Text>
+          )}
         </View>
-        <View style={styles.calendarGrid}>{days}</View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
-  const renderTimeDropdown = type => {
-    const times = ['9 AM', '10 AM', '11 AM', '12 AM'];
-    const isStart = type === 'start';
-    const selectedTime = isStart ? startTime : endTime;
-
-    return (
-      <View style={styles.timeDropdownContainer}>
-        {times.map(time => (
-          <TouchableOpacity
-            key={time}
-            style={styles.timeOption}
-            onPress={() => {
-              if (isStart) {
-                setStartTime(time);
-                setShowStartTimeDropdown(false);
-              } else {
-                setEndTime(time);
-                setShowEndTimeDropdown(false);
-              }
-            }}>
-            <Text
-              style={[
-                styles.timeText,
-                time === selectedTime && styles.selectedTimeText,
-              ]}>
-              {time}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    );
-  };
+  // Initial fetch
+  useEffect(() => {
+    const currentDay = getDayName(new Date());
+    fetchFacilities(currentDay);
+  }, []);
 
   return (
     <ImageBackground
@@ -158,35 +257,22 @@ const DateTimePage = ({route}) => {
           <Text style={styles.headerTitle}>Date & Time</Text>
           <View style={styles.placeholder} />
         </View>
-        <View style={{flex: 1}}>
-          <ScrollView style={styles.content}>
+        <View style={styles.mainContainer}>
+          <ScrollView 
+            style={styles.content}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.contentContainer}
+            nestedScrollEnabled={true}>
             <View style={styles.courtInfoCard}>
-              <Image source={facility.image} style={styles.courtImage} />
-            </View>
-            <View style={styles.card}>
-              <View
-                style={[
-                  styles.statusTag,
-                  // {backgroundColor: item.available ? '#029DDD1A' : '#F15B5B1A'},
-                  {backgroundColor: '#029DDD1A'},
-                ]}>
-                <Text
-                  style={[
-                    styles.statusText,
-                    // {color: item.available ? '#029DDD' : '#F15B5B'},
-                    {color: '#029DDD'},
-                  ]}>
-                  {/* {item.available ? 'Available' : 'Not Available'} */}
-                  Available
+              {facilityDetails?.sportDetails && (
+                <Text style={styles.facilityName}>
+                  {facilityDetails.sportDetails.facility_name}
                 </Text>
-              </View>
-              <Text style={styles.title}>{facility.name}</Text>
+              )}
             </View>
 
-            {/* {renderCalendarDays()} */}
-            {/* =============================================================================================== */}
-            <CalendarComponent />
-            {/* =============================================================================================== */}
+            <CalendarComponent onDateSelect={handleDateSelection} selectedDate={selectedDate} />
+
             <Text style={styles.sectionTitle}>Choose Available Time</Text>
 
             <View style={styles.timeSelectionContainer}>
@@ -199,9 +285,26 @@ const DateTimePage = ({route}) => {
                     setShowEndTimeDropdown(false);
                   }}>
                   <Text style={styles.selectedTimeDisplay}>{startTime}</Text>
-                  {/* <Ionicons name="chevron-down" size={20} color="#333" /> */}
                 </TouchableOpacity>
-                {showStartTimeDropdown && renderTimeDropdown('start')}
+                {showStartTimeDropdown && (
+                  <ScrollView 
+                    style={styles.timeDropdownContainer}
+                    nestedScrollEnabled={true}>
+                    {availableEndTimes.map(time => 
+                      renderTimeSlot(time, time === startTime, () => {
+                        setStartTime(time);
+                        setShowStartTimeDropdown(false);
+                        // Reset end time if it's before new start time
+                        const endHour = parseInt(convertTo24Hour(endTime).split(':')[0]);
+                        const startHour = parseInt(convertTo24Hour(time).split(':')[0]);
+                        if (endHour <= startHour) {
+                          const nextHour = `${(startHour + 1).toString().padStart(2, '0')}:00:00`;
+                          setEndTime(convertTo12Hour(nextHour));
+                        }
+                      })
+                    )}
+                  </ScrollView>
+                )}
               </View>
 
               <View style={styles.timeColumn}>
@@ -213,14 +316,44 @@ const DateTimePage = ({route}) => {
                     setShowStartTimeDropdown(false);
                   }}>
                   <Text style={styles.selectedTimeDisplay}>{endTime}</Text>
-                  {/* <Ionicons name="chevron-down" size={20} color="#333" /> */}
                 </TouchableOpacity>
-                {showEndTimeDropdown && renderTimeDropdown('end')}
+                {showEndTimeDropdown && (
+                  <ScrollView 
+                    style={styles.timeDropdownContainer}
+                    nestedScrollEnabled={true}>
+                    {getFilteredEndTimes().map(time => 
+                      renderTimeSlot(time, time === endTime, () => {
+                        setEndTime(time);
+                        setShowEndTimeDropdown(false);
+                      })
+                    )}
+                  </ScrollView>
+                )}
               </View>
             </View>
+
+            {showPriceSummary && (
+              <View style={styles.summaryContainer}>
+                <Text style={styles.summaryTitle}>Price Summary</Text>
+                <View style={styles.summaryRow}>
+                  <Text>Free Hours:</Text>
+                  <Text>{priceSummary.freeHours} hours</Text>
+                </View>
+                <View style={styles.summaryRow}>
+                  <Text>Paid Hours:</Text>
+                  <Text>{priceSummary.paidHours} hours (£{priceSummary.totalAmount.toFixed(2)})</Text>
+                </View>
+                <View style={[styles.summaryRow, styles.totalRow]}>
+                  <Text style={styles.totalText}>Total Amount:</Text>
+                  <Text style={styles.totalText}>£{priceSummary.totalAmount.toFixed(2)}</Text>
+                </View>
+              </View>
+            )}
           </ScrollView>
-          <TouchableOpacity style={styles.continueButton}>
-            <Text style={styles.continueButtonText}>Continue</Text>
+          
+          <TouchableOpacity 
+            style={styles.continueButton}>
+            <Text style={styles.continueButtonText}>Continue Booking</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -262,14 +395,21 @@ const styles = StyleSheet.create({
   placeholder: {
     width: 40,
   },
+  mainContainer: {
+    flex: 1,
+    position: 'relative',
+  },
   content: {
-    flexGrow: 1,
+    flex: 1,
     backgroundColor: 'white',
     marginTop: 45,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
+  },
+  contentContainer: {
     paddingTop: 25,
     paddingHorizontal: 25,
+    paddingBottom: 150,
   },
   courtInfoCard: {
     flexDirection: 'row',
@@ -277,7 +417,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 0.5,
     borderColor: '#ccc',
-    // padding: 16,
     marginBottom: 10,
   },
   courtImage: {
@@ -318,8 +457,9 @@ const styles = StyleSheet.create({
     fontFamily: 'Satoshi-Regular',
   },
   priceText: {
-    fontSize: 16,
-    fontFamily: 'Satoshi-Medium',
+    color: '#FF9800',
+    fontSize: 14,
+    fontWeight: '500',
   },
   calendarContainer: {
     backgroundColor: '#f9f9f9',
@@ -417,17 +557,27 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 8,
-    zIndex: 10,
+    zIndex: 999,
+    maxHeight: 200,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 5,
   },
   timeOption: {
     padding: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
+  },
+  timeSlotContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+  },
+  selectedTimeOption: {
+    backgroundColor: '#f0f8ff',
   },
   timeText: {
     fontSize: 16,
@@ -435,6 +585,53 @@ const styles = StyleSheet.create({
   selectedTimeText: {
     color: '#00A0E0',
     fontWeight: '600',
+  },
+  freeTag: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  freeTagText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  facilityName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    textAlign: 'center',
+    padding: 16,
+  },
+  summaryContainer: {
+    backgroundColor: '#f8f8f8',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  summaryTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 16,
+    color: '#333',
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  totalRow: {
+    marginTop: 8,
+    borderBottomWidth: 0,
+  },
+  totalText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#00A0E0',
   },
   continueButton: {
     position: 'absolute',
@@ -447,32 +644,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 25,
     marginBottom: 30,
+    zIndex: 1,
   },
   continueButtonText: {
     color: 'white',
     fontSize: 18,
     fontWeight: '600',
-  },
-  title: {
-    fontSize: 16,
-    fontFamily: 'Satoshi-Bold',
-    marginTop: 7,
-    marginBottom: 17,
-  },
-  card: {
-    marginBottom: 5,
-  },
-  statusTag: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 999,
-    marginTop: 12,
-    borderRadius: 100,
-  },
-  statusText: {
-    fontSize: 12,
-    fontFamily: 'Satoshi-Medium',
   },
 });
 
