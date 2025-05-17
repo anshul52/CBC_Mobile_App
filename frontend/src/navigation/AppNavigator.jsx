@@ -19,8 +19,8 @@ const AppNavigator = () => (
       name="FacilitySelection"
       component={FacilitySelectionScreen}
     />
-    <Stack.Screen name="ProfileSettings" component={ProfileSettings} />
     <Stack.Screen name="DateTime" component={DateTimePage} />
+    <Stack.Screen name="ProfileSettings" component={ProfileSettings} />
   </Stack.Navigator>
 );
 

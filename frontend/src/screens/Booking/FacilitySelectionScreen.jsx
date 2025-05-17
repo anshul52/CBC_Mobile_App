@@ -1,4 +1,5 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
   Text,
@@ -7,70 +8,11 @@ import {
   FlatList,
   Image,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import Search from '../../assets/Booking/Search.svg';
 import Profile from '../../assets/Booking/Profile.svg';
-
-const facilities = [
-  {
-    id: '1',
-    name: 'Badminton Court',
-    image: require('../../assets/Booking/place1.png'),
-    price: '$1880',
-    available: true,
-  },
-  {
-    id: '2',
-    name: 'Swimming Pool',
-    image: require('../../assets/Booking/place1.png'),
-    price: '$1880',
-    available: false,
-  },
-  {
-    id: '3',
-    name: 'Tennis',
-    image: require('../../assets/Booking/place1.png'),
-    price: '$1880',
-    available: true,
-  },
-  {
-    id: '4',
-    name: 'Squash Court',
-    image: require('../../assets/Booking/place1.png'),
-    price: '$1880',
-    available: true,
-  },
-  {
-    id: '5',
-    name: 'PickleBall',
-    image: require('../../assets/Booking/place1.png'),
-    price: '$1880',
-    available: true,
-  },
-  {
-    id: '6',
-    name: 'Snooker & Billard',
-    image: require('../../assets/Booking/place1.png'),
-    price: '$1880',
-    available: false,
-  },
-  {
-    id: '7',
-    name: 'Fitness Dance Studio',
-    image: require('../../assets/Booking/place1.png'),
-    price: '$1880',
-    available: true,
-  },
-
-  {
-    id: '8',
-    name: 'GYM',
-    image: require('../../assets/Booking/place1.png'),
-    price: '$1880',
-    available: true,
-  },
-];
 
 const FacilityItem = ({item, handleSelect}) => (
   <TouchableOpacity style={styles.card} onPress={() => handleSelect(item)}>
@@ -93,11 +35,56 @@ const FacilityItem = ({item, handleSelect}) => (
 );
 
 const FacilitySelectionScreen = () => {
+  const [facilities, setFacilities] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const navigation = useNavigation();
   const handleSelect = item => {
     console.log('Selected:', item);
     navigation.navigate('DateTime', {facility: item});
   };
+
+  const fetchFacilities = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) {
+        console.warn('No token found');
+        return;
+      }
+
+      const response = await fetch(
+        'http://10.0.2.2:8085/api/sports/get-all-facilities',
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const mapped = data.facilities.map(item => ({
+          id: item.id.toString(),
+          name: item.name,
+          image: {uri: item.img_src},
+          available: item.availability_status === '1',
+        }));
+        setFacilities(mapped);
+      } else {
+        console.error('Failed to fetch:', data.message);
+      }
+    } catch (error) {
+      console.error('Error fetching facilities:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFacilities();
+  }, []);
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -117,14 +104,22 @@ const FacilitySelectionScreen = () => {
         <TextInput placeholder="Search" style={styles.searchInput} />
       </View>
 
-      <FlatList
-        data={facilities}
-        keyExtractor={item => item.id}
-        renderItem={({item}) => (
-          <FacilityItem item={item} handleSelect={handleSelect} />
-        )}
-        contentContainerStyle={{paddingBottom: 100}}
-      />
+      {loading ? (
+        <ActivityIndicator
+          size="large"
+          color="#029DDD"
+          style={{marginTop: 50}}
+        />
+      ) : (
+        <FlatList
+          data={facilities}
+          keyExtractor={item => item.id}
+          renderItem={({item}) => (
+            <FacilityItem item={item} handleSelect={handleSelect} />
+          )}
+          contentContainerStyle={{paddingBottom: 100}}
+        />
+      )}
     </View>
   );
 };
@@ -194,7 +189,6 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     marginTop: 12,
     borderRadius: 100,
-    // backgroundColor: 'red',
   },
   tagText: {
     fontSize: 14,

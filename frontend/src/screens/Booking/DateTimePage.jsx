@@ -10,10 +10,9 @@ import {
   StatusBar,
   ImageBackground,
 } from 'react-native';
-import Calendar from '../../assets/Booking/calendar.svg';
-import Clock from '../../assets/Booking/clock.svg';
 import Back from '../../assets/Booking/Back.svg';
 import {useNavigation} from '@react-navigation/native';
+import CalendarComponent from '../../component/DateTimePageCompo/CalendarComponent';
 
 const DateTimePage = ({route}) => {
   const navigation = useNavigation();
@@ -159,69 +158,71 @@ const DateTimePage = ({route}) => {
           <Text style={styles.headerTitle}>Date & Time</Text>
           <View style={styles.placeholder} />
         </View>
-
-        <ScrollView style={styles.content}>
-          <View style={styles.courtInfoCard}>
-            <Image
-              // source={require('../../assets/Booking/place1.png')}
-              source={facility.image}
-              style={styles.courtImage}
-            />
-            <View style={styles.courtDetails}>
-              <Text style={styles.courtName}>{facility.name}</Text>
-              <Text style={styles.availabilityText}>Available:</Text>
-              <View style={styles.availabilityDetails}>
-                <View style={styles.availabilityItem}>
-                  <Calendar width={17} height={17} />
-                  <Text style={styles.availabilityItemText}>30 Nov</Text>
-                </View>
-                <View style={styles.availabilityItem}>
-                  <Clock width={17} height={17} />
-                  <Text style={styles.availabilityItemText}>2 Days</Text>
-                </View>
+        <View style={{flex: 1}}>
+          <ScrollView style={styles.content}>
+            <View style={styles.courtInfoCard}>
+              <Image source={facility.image} style={styles.courtImage} />
+            </View>
+            <View style={styles.card}>
+              <View
+                style={[
+                  styles.statusTag,
+                  // {backgroundColor: item.available ? '#029DDD1A' : '#F15B5B1A'},
+                  {backgroundColor: '#029DDD1A'},
+                ]}>
+                <Text
+                  style={[
+                    styles.statusText,
+                    // {color: item.available ? '#029DDD' : '#F15B5B'},
+                    {color: '#029DDD'},
+                  ]}>
+                  {/* {item.available ? 'Available' : 'Not Available'} */}
+                  Available
+                </Text>
               </View>
-              <Text style={styles.priceText}>{facility.price}</Text>
-            </View>
-          </View>
-
-          {renderCalendarDays()}
-
-          <Text style={styles.sectionTitle}>Choose Available Time</Text>
-
-          <View style={styles.timeSelectionContainer}>
-            <View style={styles.timeColumn}>
-              <Text style={styles.timeLabel}>Start</Text>
-              <TouchableOpacity
-                style={styles.timeSelector}
-                onPress={() => {
-                  setShowStartTimeDropdown(!showStartTimeDropdown);
-                  setShowEndTimeDropdown(false);
-                }}>
-                <Text style={styles.selectedTimeDisplay}>{startTime}</Text>
-                {/* <Ionicons name="chevron-down" size={20} color="#333" /> */}
-              </TouchableOpacity>
-              {showStartTimeDropdown && renderTimeDropdown('start')}
+              <Text style={styles.title}>{facility.name}</Text>
             </View>
 
-            <View style={styles.timeColumn}>
-              <Text style={styles.timeLabel}>End</Text>
-              <TouchableOpacity
-                style={styles.timeSelector}
-                onPress={() => {
-                  setShowEndTimeDropdown(!showEndTimeDropdown);
-                  setShowStartTimeDropdown(false);
-                }}>
-                <Text style={styles.selectedTimeDisplay}>{endTime}</Text>
-                {/* <Ionicons name="chevron-down" size={20} color="#333" /> */}
-              </TouchableOpacity>
-              {showEndTimeDropdown && renderTimeDropdown('end')}
-            </View>
-          </View>
+            {/* {renderCalendarDays()} */}
+            {/* =============================================================================================== */}
+            <CalendarComponent />
+            {/* =============================================================================================== */}
+            <Text style={styles.sectionTitle}>Choose Available Time</Text>
 
+            <View style={styles.timeSelectionContainer}>
+              <View style={styles.timeColumn}>
+                <Text style={styles.timeLabel}>Start</Text>
+                <TouchableOpacity
+                  style={styles.timeSelector}
+                  onPress={() => {
+                    setShowStartTimeDropdown(!showStartTimeDropdown);
+                    setShowEndTimeDropdown(false);
+                  }}>
+                  <Text style={styles.selectedTimeDisplay}>{startTime}</Text>
+                  {/* <Ionicons name="chevron-down" size={20} color="#333" /> */}
+                </TouchableOpacity>
+                {showStartTimeDropdown && renderTimeDropdown('start')}
+              </View>
+
+              <View style={styles.timeColumn}>
+                <Text style={styles.timeLabel}>End</Text>
+                <TouchableOpacity
+                  style={styles.timeSelector}
+                  onPress={() => {
+                    setShowEndTimeDropdown(!showEndTimeDropdown);
+                    setShowStartTimeDropdown(false);
+                  }}>
+                  <Text style={styles.selectedTimeDisplay}>{endTime}</Text>
+                  {/* <Ionicons name="chevron-down" size={20} color="#333" /> */}
+                </TouchableOpacity>
+                {showEndTimeDropdown && renderTimeDropdown('end')}
+              </View>
+            </View>
+          </ScrollView>
           <TouchableOpacity style={styles.continueButton}>
             <Text style={styles.continueButtonText}>Continue</Text>
           </TouchableOpacity>
-        </ScrollView>
+        </View>
       </SafeAreaView>
     </ImageBackground>
   );
@@ -262,7 +263,7 @@ const styles = StyleSheet.create({
     width: 40,
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: 'white',
     marginTop: 45,
     borderTopLeftRadius: 30,
@@ -276,12 +277,12 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 0.5,
     borderColor: '#ccc',
-    padding: 16,
+    // padding: 16,
     marginBottom: 10,
   },
   courtImage: {
-    width: 106,
-    height: 106,
+    width: '100%',
+    height: 152,
     borderRadius: 8,
   },
   courtDetails: {
@@ -436,16 +437,42 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   continueButton: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     backgroundColor: '#00A0E0',
     borderRadius: 8,
     padding: 16,
     alignItems: 'center',
-    marginBottom: 40,
+    marginHorizontal: 25,
+    marginBottom: 30,
   },
   continueButtonText: {
     color: 'white',
     fontSize: 18,
     fontWeight: '600',
+  },
+  title: {
+    fontSize: 16,
+    fontFamily: 'Satoshi-Bold',
+    marginTop: 7,
+    marginBottom: 17,
+  },
+  card: {
+    marginBottom: 5,
+  },
+  statusTag: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 999,
+    marginTop: 12,
+    borderRadius: 100,
+  },
+  statusText: {
+    fontSize: 12,
+    fontFamily: 'Satoshi-Medium',
   },
 });
 

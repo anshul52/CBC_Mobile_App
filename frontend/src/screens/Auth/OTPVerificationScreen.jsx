@@ -1,4 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
   Text,
@@ -58,7 +59,13 @@ const OTPVerificationScreen = () => {
 
       const data = await response.json();
 
-      if (response.ok) {
+      if (response.ok && data.token && data.user) {
+        // Save token and user details to AsyncStorage
+        await AsyncStorage.multiSet([
+          ['authToken', data.token],
+          ['userData', JSON.stringify(data.user)],
+        ]);
+        console.log('Token saved:', data.token);
         Alert.alert('Success', 'OTP verified successfully', [
           {
             text: 'Continue',
