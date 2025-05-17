@@ -7,6 +7,16 @@ export const SQL_QUERIES = {
   SELECT_USER: "SELECT * FROM users WHERE phone = ?",
   INSERT_USER: "INSERT INTO users (phone) VALUES (?)",
   SELECT_USER_DETAILS: "SELECT * FROM users WHERE id = ?",
+  UPDATE_PAYMENT_STATUS: `
+    INSERT INTO payments (user_id, status, amount, payment_date, transaction_id)
+    VALUES (?, ?, ?, ?, ?)
+    ON DUPLICATE KEY UPDATE
+    status = VALUES(status),
+    amount = VALUES(amount),
+    payment_date = VALUES(payment_date),
+    transaction_id = VALUES(transaction_id)
+  `,
+  GET_PAYMENT_STATUS: 'SELECT * FROM payments WHERE user_id = ? ORDER BY payment_date DESC LIMIT 1'
 };
 
 export const SPORTS_QUERIES = {
