@@ -30,15 +30,15 @@ export const SPORTS_QUERIES = {
   WHERE f.name = 'Badminton Courts'
   ORDER BY p.start_time
     `,
-  SELECT_SPORTS_DETAILS_DAY_WISE: `
+  SELECT_SPORTS_DETAILS_DAY_WISE_AND_FACILITY_WISE: `
   SELECT
   f.id AS facility_id,
   f.name AS facility_name,
   dt.id AS day_type_id,
   dt.name AS day_type_name,
   dtd.weekday AS day,
-  oh.open_time,
-  oh.close_time,
+  TIME_FORMAT(oh.open_time, '%H:%i:%s') AS open_time,
+  TIME_FORMAT(oh.close_time, '%H:%i:%s') AS close_time,
   pr.start_time AS pricing_start_time,
   pr.end_time AS pricing_end_time,
   pr.price,
@@ -51,7 +51,9 @@ export const SPORTS_QUERIES = {
   JOIN day_type_days dtd ON dt.id = dtd.day_type_id
   LEFT JOIN pricing_rules pr ON f.id = pr.facility_id AND pr.day_type_id = dt.id
   LEFT JOIN equipment_rentals er ON f.id = er.facility_id
-  WHERE dtd.weekday = ?
+  WHERE dtd.weekday = ? AND f.id = ?
+  ORDER BY pr.start_time;
+
     `,
   SELECT_SPORTS_DETAILS_FACILITY_WISE: `SELECT 
   oh.id,
@@ -73,4 +75,25 @@ export const SPORTS_QUERIES = {
   LEFT JOIN pricing_rules pr ON pr.facility_id = f.id AND pr.day_type_id = dt.id
   LEFT JOIN equipment_rentals er ON er.facility_id = f.id
   WHERE f.id = ?`, 
+  SELECT_SPORTS_DETAILS_FACILITY_WISE: `
+   SELECT
+        f.id AS facility_id,
+        f.name AS facility_name,
+        dt.id AS day_type_id,
+        dt.name AS day_type_name,
+        oh.open_time,
+        oh.close_time,
+        pr.start_time AS pricing_start_time,
+        pr.end_time AS pricing_end_time,
+        pr.price,
+        pr.unit,
+        er.item_name,
+        er.price AS rental_price
+      FROM facilities f
+      LEFT JOIN operating_hours oh ON f.id = oh.facility_id
+      LEFT JOIN day_types dt ON oh.day_type_id = dt.id
+      LEFT JOIN pricing_rules pr ON f.id = pr.facility_id AND dt.id = pr.day_type_id
+      LEFT JOIN equipment_rentals er ON f.id = er.facility_id
+  `,
+  SELECT_ALL_FACILITIES: `SELECT * FROM facilities`,
 };

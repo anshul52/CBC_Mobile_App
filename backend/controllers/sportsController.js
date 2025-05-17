@@ -57,60 +57,81 @@ export const getSportDetailsFacilityWiseController = async (req, res) => {
   }
 };
 
-export const getSportsDetailsDayWiseController = async (req, res) => {
+export const getSportsDetailsDayWiseAndFacilityWiseController = async (req, res) => {
   try {
-    const { day } = req.query;
-    const sportDetails = await executeQuery2(
-      SPORTS_QUERIES.SELECT_SPORTS_DETAILS_DAY_WISE,
-      [day]
+    const { day, facilityId } = req.query;
+
+    const rows = await executeQuery2(
+      SPORTS_QUERIES.SELECT_SPORTS_DETAILS_DAY_WISE_AND_FACILITY_WISE,
+      [day, facilityId]
     );
-    if (sportDetails && sportDetails.length > 0) {
-      res.status(200).json({
-        success: true,
-        message: RESPONSE_MESSAGES.SPORTS_RETRIEVED_SUCCESSFULLY,
-        sportDetails: sportDetails,
-      });
-    } else {
-      res.status(404).json({
+
+    if (!rows || rows.length === 0) {
+      return res.status(404).json({
         success: false,
         message: RESPONSE_MESSAGES.SPORTS_DETAILS_NOT_FOUND,
       });
     }
+
+    const facility = {
+      facility_id: rows[0].facility_id,
+      facility_name: rows[0].facility_name,
+      day_type_id: rows[0].day_type_id,
+      day_type_name: rows[0].day_type_name,
+      day: rows[0].day,
+      open_time: rows[0].open_time,
+      close_time: rows[0].close_time,
+      pricing_rules: [],
+      equipment_rentals: []
+    };
+
+    const rentalMap = new Map();
+
+    rows.forEach(row => {
+      // Push pricing rules if valid
+      if (row.pricing_start_time && row.pricing_end_time) {
+        facility.pricing_rules.push({
+          start_time: row.pricing_start_time,
+          end_time: row.pricing_end_time,
+          price: row.price,
+          unit: row.unit
+        });
+      }
+
+      // Avoid duplicate rental items
+      if (row.rental_item && !rentalMap.has(row.rental_item)) {
+        rentalMap.set(row.rental_item, {
+          item_name: row.rental_item,
+          price: row.rental_price
+        });
+      }
+    });
+
+    facility.equipment_rentals = Array.from(rentalMap.values());
+
+    return res.status(200).json({
+      success: true,
+      message: RESPONSE_MESSAGES.SPORTS_RETRIEVED_SUCCESSFULLY,
+      sportDetails: facility
+    });
+
   } catch (error) {
     logger.error(LOG_MESSAGES.ERROR_IN_GET_SPORTS(error));
-    console.log(error);
-    res.status(500).json({
+    console.error(error);
+    return res.status(500).json({
       success: false,
       message: RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
     });
   }
 };
 
+
 export const eachFacilityWiseSportsDetailsController = async (req, res) => {
   try {
     
 
 
-    const rows = await executeQuery2(`
-      SELECT
-        f.id AS facility_id,
-        f.name AS facility_name,
-        dt.id AS day_type_id,
-        dt.name AS day_type_name,
-        oh.open_time,
-        oh.close_time,
-        pr.start_time AS pricing_start_time,
-        pr.end_time AS pricing_end_time,
-        pr.price,
-        pr.unit,
-        er.item_name,
-        er.price AS rental_price
-      FROM facilities f
-      LEFT JOIN operating_hours oh ON f.id = oh.facility_id
-      LEFT JOIN day_types dt ON oh.day_type_id = dt.id
-      LEFT JOIN pricing_rules pr ON f.id = pr.facility_id AND dt.id = pr.day_type_id
-      LEFT JOIN equipment_rentals er ON f.id = er.facility_id
-    `);
+    const rows = await executeQuery2(SPORTS_QUERIES.SELECT_SPORTS_DETAILS_FACILITY_WISE);
     
     const facilityMap = {};
     
@@ -188,3 +209,23 @@ export const eachFacilityWiseSportsDetailsController = async (req, res) => {
     console.log(error);
   }
 };
+
+export const getAllFacilitiesController = async (req, res) => {
+  try {
+    const rows = await executeQuery2(SPORTS_QUERIES.SELECT_ALL_FACILITIES);
+    res.status(200).json({
+      success: true,
+      message: RESPONSE_MESSAGES.FACILITIES_RETRIEVED_SUCCESSFULLY,
+      facilities: rows
+    });
+    
+  } catch (error) {
+    logger.error(LOG_MESSAGES.ERROR_IN_GET_FACILITIES(error));
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+    });
+  }
+};
+

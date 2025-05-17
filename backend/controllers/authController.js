@@ -156,7 +156,7 @@ export const verifyOtpController = async (req, res) => {
 
       // Generate JWT token
       const token = JWT.sign({ _id: userId }, process.env.JWT_SECRET, {
-        expiresIn: "7d",
+        expiresIn: "30d",
       });
 
       res.status(200).json({

@@ -41,4 +41,7 @@ export const RESPONSE_MESSAGES = {
     SPORTS_DETAILS_RETRIEVED_SUCCESSFULLY: "Sports details retrieved successfully",
     SPORTS_DETAILS_RETRIEVAL_FAILED: "Sports details retrieval failed",
     SPORTS_DETAILS_NOT_FOUND: "Sports details not found",
+    FACILITIES_RETRIEVED_SUCCESSFULLY: "Facilities retrieved successfully",
+    FACILITIES_RETRIEVAL_FAILED: "Facilities retrieval failed",
+    FACILITIES_NOT_FOUND: "Facilities not found",
 };
