@@ -6,6 +6,8 @@ import ProfileSettings from '../screens/Booking/ProfileSettings';
 import DateTimePage from '../screens/Booking/DateTimePage';
 import FacilityList from '../screens/Booking/FacilityList';
 import LoginScreen from '../screens/Auth/LoginScreen';
+import PaymentCompletedScreen from '../screens/Booking/PaymentCompletedScreen';
+import PaymentFailedScreen from '../screens/Booking/PaymentFailedScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -21,6 +23,8 @@ const AppNavigator = () => (
     />
     <Stack.Screen name="DateTime" component={DateTimePage} />
     <Stack.Screen name="ProfileSettings" component={ProfileSettings} />
+    <Stack.Screen name="PaymentCompleted" component={PaymentCompletedScreen} />
+    <Stack.Screen name="PaymentFailed" component={PaymentFailedScreen} />
   </Stack.Navigator>
 );
 

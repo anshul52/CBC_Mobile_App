@@ -1,174 +1,12 @@
-// import React from 'react';
-// import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
-// import BackBlack from '../../assets/Booking/BackBlack.svg';
-// import ForwardBlack from '../../assets/Booking/ForwardBlack';
-
-// const daysOfWeek = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-// const dates = [
-//   ['', '', '', '1', '2', '3', '4'],
-//   ['5', '6', '7', '8', '9', '10', '11'],
-//   ['12', '13', '14', '15', '16', '17', '18'],
-//   ['19', '20', '21', '22', '23', '24', '25'],
-//   ['26', '27', '28', '', '', '', ''],
-// ];
-
-// const Calendar = () => {
-//   const selectedDate = '16';
-//   const markedDate = '4';
-
-//   return (
-//     <View style={styles.container}>
-//       {/* Header */}
-//       <View style={styles.header}>
-//         <TouchableOpacity onPress={() => navigation.goBack()}>
-//           <BackBlack width={13} height={13} />
-//         </TouchableOpacity>
-//         <Text style={styles.headerText}>May 2025</Text>
-//         <TouchableOpacity onPress={() => navigation.goBack()}>
-//           <ForwardBlack width={13} height={13} />
-//         </TouchableOpacity>
-//       </View>
-
-//       {/* Days of Week */}
-//       <View
-//         style={[
-//           styles.weekRow,
-//           {backgroundColor: '#EDEDED', paddingVertical: 10, marginTop: 5},
-//         ]}>
-//         {daysOfWeek.map((day, idx) => (
-//           <Text key={idx} style={styles.weekText}>
-//             {day}
-//           </Text>
-//         ))}
-//       </View>
-
-//       {/* Date Grid */}
-//       {dates.map((week, i) => (
-//         <View key={i} style={styles.weekRow}>
-//           {week.map((date, j) => {
-//             const isSelected = date === selectedDate;
-//             const isMarked = date === markedDate;
-//             const isDim = date === '';
-
-//             return (
-//               <View key={j} style={[styles.dateCell]}>
-//                 {isMarked && <View style={styles.underline} />}
-//                 <Text
-//                   style={[
-//                     styles.dateText,
-//                     isSelected && styles.selectedDateText,
-//                     isDim && styles.dimDateText,
-//                   ]}>
-//                   {date}
-//                 </Text>
-//                 {isSelected && <View style={styles.circle} />}
-//               </View>
-//             );
-//           })}
-//         </View>
-//       ))}
-//     </View>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: {
-//     borderRadius: 10,
-//     borderWidth: 1,
-//     borderColor: '#ddd',
-//     padding: 16,
-//     backgroundColor: '#fff',
-//     width: '100%',
-//     alignSelf: 'center',
-//     marginTop: 5,
-//     marginBottom: 10,
-//   },
-//   header: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     alignItems: 'center',
-//     marginBottom: 12,
-//   },
-//   headerText: {
-//     fontSize: 18,
-//     fontFamily: 'Inter_24pt-Medium',
-//   },
-//   arrow: {
-//     fontSize: 20,
-//     paddingHorizontal: 10,
-//   },
-//   weekRow: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-around',
-//     marginBottom: 8,
-//     // backgroundColor: '#EDEDED',
-//   },
-//   weekText: {
-//     color: '#888',
-//     fontWeight: '600',
-//     width: 30,
-//     textAlign: 'center',
-//   },
-//   dateCell: {
-//     width: 30,
-//     height: 30,
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//     position: 'relative',
-//   },
-//   dateText: {
-//     fontSize: 14,
-//     color: '#000',
-//     fontFamily: 'Inter_24pt-SemiBold',
-//   },
-//   dimDateText: {
-//     color: '#bbb',
-//   },
-//   selectedDateText: {
-//     color: '#fff',
-//     zIndex: 2,
-//   },
-//   circle: {
-//     position: 'absolute',
-//     width: 30,
-//     height: 30,
-//     borderRadius: 15,
-//     backgroundColor: '#FFA14A',
-//     top: 0,
-//     zIndex: 1,
-//   },
-//   underline: {
-//     position: 'absolute',
-//     width: 20,
-//     height: 2,
-//     backgroundColor: '#FFA14A',
-//     top: 25,
-//   },
-// });
-
-// export default Calendar;
-
 import React from 'react';
-import {View, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet} from 'react-native';
 import {Calendar} from 'react-native-calendars';
 
 const CalendarComponent = () => {
   const markedDates = {
-    '2025-05-04': {
-      marked: true,
-      dotColor: 'transparent',
-      customStyles: {
-        container: {
-          borderBottomWidth: 2,
-          borderBottomColor: '#FFA14A',
-        },
-        text: {},
-      },
-    },
     '2025-05-16': {
       selected: true,
       selectedColor: '#FFA14A',
-      selectedTextColor: '#fff',
     },
   };
 
@@ -176,26 +14,63 @@ const CalendarComponent = () => {
     <View style={styles.container}>
       <Calendar
         current={'2025-05-01'}
-        markingType={'custom'}
         markedDates={markedDates}
         theme={{
-          textDayFontSize: 16,
-          textDayFontWeight: '500',
-          textMonthFontSize: 18,
-          textMonthFontWeight: 'bold',
-          textSectionTitleColor: '#888',
-          monthTextColor: '#000',
-          arrowColor: '#000',
+          backgroundColor: '#ffffff',
+          calendarBackground: '#ffffff',
+          textSectionTitleColor: '#b6b6b6',
           selectedDayBackgroundColor: '#FFA14A',
-          selectedDayTextColor: '#fff',
+          selectedDayTextColor: '#ffffff',
+          todayTextColor: '#000000',
+          dayTextColor: '#2d4150',
+          textDisabledColor: '#d9e1e8',
+          monthTextColor: '#000000',
+          textMonthFontSize: 16,
+          textDayFontSize: 14,
+          textDayHeaderFontSize: 14,
+          'stylesheet.calendar.header': {
+            header: {
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              paddingLeft: 10,
+              paddingRight: 10,
+              marginTop: 6,
+              alignItems: 'center',
+            },
+            monthText: {
+              fontSize: 16,
+              fontWeight: '500',
+              color: '#000000',
+            },
+          },
+          'stylesheet.day.basic': {
+            base: {
+              width: 32,
+              height: 32,
+              alignItems: 'center',
+              justifyContent: 'center',
+            },
+            text: {
+              fontSize: 14,
+              fontWeight: '400',
+            },
+          },
+          'stylesheet.calendar.main': {
+            week: {
+              marginTop: 4,
+              marginBottom: 4,
+              flexDirection: 'row',
+              justifyContent: 'space-around',
+            },
+          },
         }}
         renderArrow={direction => (
-          <View>
-            <Text style={{fontSize: 18}}>
-              {direction === 'left' ? '<' : '>'}
-            </Text>
-          </View>
+          <Text style={styles.arrow}>{direction === 'left' ? '‹' : '›'}</Text>
         )}
+        renderHeader={date => {
+          const month = date.toString('MMMM yyyy');
+          return <Text style={styles.monthText}>May 2025</Text>;
+        }}
       />
     </View>
   );
@@ -203,14 +78,18 @@ const CalendarComponent = () => {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 20,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 12,
-    padding: 8,
-    backgroundColor: '#fff',
-    width: '90%',
-    alignSelf: 'center',
+    backgroundColor: '#ffffff',
+    padding: 0,
+  },
+  arrow: {
+    fontSize: 24,
+    color: '#000000',
+    padding: 10,
+  },
+  monthText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#000000',
   },
 });
 
