@@ -10,6 +10,16 @@ const CalendarComponent = ({onDateSelect, selectedDate, setSelectedDate}) => {
       selected: true,
       selectedColor: 'blue',
       disableTouchEvent: false,
+    },
+    [today]: {
+      customStyles: {
+        container: {
+          backgroundColor: 'transparent', // No circle background
+        },
+        text: {
+          color: '#2d4150', // Normal text color
+        },
+      },
     }
   } : {};
 
