@@ -17,16 +17,16 @@ const AppNavigator = () => (
     {/* <Stack.Screen name="OTP" component={FacilityList} /> */}
 
     {/* <Stack.Screen name="Login" component={LoginScreen} />
-    <Stack.Screen name="OTP" component={OTPVerificationScreen} />
-    <Stack.Screen
+    <Stack.Screen name="OTP" component={OTPVerificationScreen} /> */}
+    {/* <Stack.Screen
       name="FacilitySelection"
       component={FacilitySelectionScreen}
-    /> */}
+    />
     <Stack.Screen name="DateTime" component={DateTimePage} />
-    <Stack.Screen name="ProfileSettings" component={ProfileSettings} />
+    <Stack.Screen name="ProfileSettings" component={ProfileSettings} /> */}
+    <Stack.Screen name="Checkout" component={CheckoutScreen} />
     <Stack.Screen name="PaymentCompleted" component={PaymentCompletedScreen} />
     <Stack.Screen name="PaymentFailed" component={PaymentFailedScreen} />
-    <Stack.Screen name="Checkout" component={CheckoutScreen} />
   </Stack.Navigator>
 );
 

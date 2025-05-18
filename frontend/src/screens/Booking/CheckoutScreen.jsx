@@ -10,37 +10,65 @@ import {
   StatusBar,
   ImageBackground,
   Button,
+  Alert,
 } from 'react-native';
 import Back from '../../assets/Booking/Back.svg';
 import {CardField, useStripe} from '@stripe/stripe-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useNavigation} from '@react-navigation/native';
 
 export default function CheckoutScreen() {
+  const navigation = useNavigation();
   const [cardDetails, setCardDetails] = useState({});
   const {confirmPayment} = useStripe();
 
   const handlePayPress = async () => {
-    // Fetch client secret from backend
-    const response = await fetch(
-      'http://<your-backend>/create-payment-intent',
-      {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({amount: 1000}), // $10
-      },
-    );
-    const {clientSecret} = await response.json();
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) {
+        console.warn('No token found');
+        return;
+      }
+      const response = await fetch(
+        'http://10.0.2.2:8085/api/payment/create-payment-intent',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            amount: 100,
+          }),
+        },
+      );
+      const {clientSecret} = await response.json();
 
-    const {error, paymentIntent} = await confirmPayment(clientSecret, {
-      type: 'Card',
-      billingDetails: {
-        email: 'customer@example.com',
-      },
-    });
+      const {error, paymentIntent} = await confirmPayment(clientSecret, {
+        paymentMethodType: 'Card',
+        paymentMethodData: {
+          billingDetails: {
+            email: 'anshulgupta2028@gmail.com',
+          },
+        },
+      });
 
-    if (error) {
-      Alert.alert('Payment failed', error.message);
-    } else if (paymentIntent) {
-      Alert.alert('Success', `Payment successful!`);
+      if (error) {
+        navigation.replace('PaymentFailed', {
+          reason: error.message || 'Payment failed',
+        });
+      } else if (paymentIntent && paymentIntent.status === 'Succeeded') {
+        navigation.replace('PaymentCompleted');
+      } else {
+        navigation.replace('PaymentFailed', {
+          reason: `Unexpected status: ${paymentIntent?.status}`,
+        });
+      }
+    } catch (err) {
+      console.error('Payment error', err);
+      navigation.replace('PaymentFailed', {
+        reason: 'Something went wrong',
+      });
     }
   };
 
@@ -68,7 +96,7 @@ export default function CheckoutScreen() {
             contentContainerStyle={styles.contentContainer}>
             <View>
               <CardField
-                postalCodeEnabled={true}
+                // postalCodeEnabled={true}
                 placeholder={{number: '4242 4242 4242 4242'}}
                 onCardChange={cardDetails => setCardDetails(cardDetails)}
                 style={{height: 50, marginVertical: 30, backgroundColor: 'red'}}

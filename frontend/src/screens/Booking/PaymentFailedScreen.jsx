@@ -3,9 +3,9 @@ import React from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import PaymentFail from '../../assets/Booking/PaymentFail.svg';
 
-export default function PaymentFailedScreen() {
+export default function PaymentFailedScreen({route}) {
   const navigation = useNavigation();
-
+  const {reason} = route.params || {};
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Payment Status</Text>
@@ -17,7 +17,7 @@ export default function PaymentFailedScreen() {
       </View>
 
       <Text style={styles.failedText}>Payment Failed</Text>
-      <Text style={styles.subText}>Your payment has been done</Text>
+      <Text style={styles.subText}>{reason || 'Unknown error occurred.'}</Text>
 
       <Text style={styles.totalPaid}>Total need paid</Text>
       <Text style={styles.amount}>
@@ -25,7 +25,9 @@ export default function PaymentFailedScreen() {
         <Text style={styles.amountBold}>400.00</Text>
       </Text>
 
-      <TouchableOpacity style={styles.cancelButton}>
+      <TouchableOpacity
+        style={styles.cancelButton}
+        onPress={() => navigation.navigate('Checkout')}>
         <Text style={styles.cancelButtonText}>Cancel</Text>
       </TouchableOpacity>
 
