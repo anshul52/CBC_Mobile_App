@@ -62,6 +62,7 @@ const FacilitySelectionScreen = () => {
         },
       );
 
+
       const data = await response.json();
 
       if (response.ok) {
@@ -82,7 +83,8 @@ const FacilitySelectionScreen = () => {
     }
   };
 
-  useEffect(() => {
+  useEffect(() => { 
+    console.log('fetching facilities');
     fetchFacilities();
   }, []);
   return (

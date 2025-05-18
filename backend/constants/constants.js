@@ -15,6 +15,11 @@ export const LOG_MESSAGES = {
     USER_NOT_FOUND: (phone) => `User not found for phone: ${phone}`,
     USER_FOUND: (phone) => `User found for phone: ${phone}`,
     ERROR_IN_GET_SPORTS: (error) => `Error in getSportsController: ${error.message}`,
+    USER_NOT_FOUND: 'User not found during payment process',
+    ERROR_IN_PAYMENT_INTENT: (error) => `Error creating payment intent: ${error.message}`,
+    PAYMENT_FAILED: (paymentId) => `Payment failed for payment ID: ${paymentId}`,
+    ERROR_IN_WEBHOOK: (error) => `Error processing webhook: ${error.message}`,
+    ERROR_IN_GET_PAYMENT_STATUS: (error) => `Error getting payment status: ${error.message}`
 };
 
 // Constants for response messages
@@ -44,4 +49,8 @@ export const RESPONSE_MESSAGES = {
     FACILITIES_RETRIEVED_SUCCESSFULLY: "Facilities retrieved successfully",
     FACILITIES_RETRIEVAL_FAILED: "Facilities retrieval failed",
     FACILITIES_NOT_FOUND: "Facilities not found",
+    PAYMENT_INTENT_CREATED: 'Payment intent created successfully',
+    PAYMENT_NOT_FOUND: 'No payment record found',
+    PAYMENT_STATUS_RETRIEVED: 'Payment status retrieved successfully',
+    WEBHOOK_ERROR: 'Webhook signature verification failed',
 };
