@@ -17,6 +17,9 @@ import CalendarComponent from '../../component/DateTimePageCompo/CalendarCompone
 
 const DateTimePage = ({route}) => {
   const navigation = useNavigation();
+  const {facility} = route.params;
+  // console.log('Facility:', +facility.id);
+
   const [selectedDate, setSelectedDate] = useState(new Date().getDate());
   const [startTime, setStartTime] = useState('08:00 AM');
   const [endTime, setEndTime] = useState('09:00 AM');
@@ -89,7 +92,8 @@ const DateTimePage = ({route}) => {
         return;
       }
 
-      const facilityId = 6; // Default facility ID for testing
+      // const facilityId = facilityId;
+      const facilityId = +facility.id;
       setLoading(true);
 
       const response = await fetch(

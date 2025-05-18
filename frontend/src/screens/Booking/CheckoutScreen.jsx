@@ -30,7 +30,8 @@ export default function CheckoutScreen() {
         return;
       }
       const response = await fetch(
-        'http://10.0.2.2:8085/api/payment/create-payment-intent',
+        'https://cbc-mobile-app.onrender.com/api/payment/create-payment-intent',
+        // 'http://10.0.2.2:8085/api/payment/create-payment-intent',
         {
           method: 'POST',
           headers: {
