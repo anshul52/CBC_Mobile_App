@@ -65,7 +65,22 @@ const DateTimePage = ({route}) => {
     return days[date.getDay()];
   };
 
-  const fetchFacilities = async (date) => {
+  const handleDateSelection = (dateString) => {
+    if (!dateString) return;
+    
+    const selectedDate = new Date(dateString);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Prevent selecting past dates
+    if (selectedDate < today) {
+      return;
+    }
+    
+    fetchFacilities(dateString);
+  };
+
+  const fetchFacilities = async (dateString) => {
     try {
       const token = await AsyncStorage.getItem('authToken');
       if (!token) {
@@ -77,7 +92,7 @@ const DateTimePage = ({route}) => {
       setLoading(true);
 
       const response = await fetch(
-        `http://10.0.2.2:8085/api/sports/sports-details-day-wise-and-facility-wise?date=${date}&facilityId=${facilityId}`,
+        `http://10.0.2.2:8085/api/sports/sports-details-day-wise-and-facility-wise?date=${dateString}&facilityId=${facilityId}`,
         {
           method: 'GET',
           headers: {
@@ -92,8 +107,11 @@ const DateTimePage = ({route}) => {
         setFacilityDetails(data);
         // Reset times when facility details change
         if (data.sportDetails) {
-          setStartTime(convertTo12Hour(data.sportDetails.open_time));
-          setEndTime(convertTo12Hour(data.sportDetails.open_time.replace('00:', '01:')));
+          const { open_time, close_time } = data.sportDetails;
+          if (open_time && close_time) {
+            setStartTime(convertTo12Hour(open_time));
+            setEndTime(convertTo12Hour(open_time.replace('00:', '01:')));
+          }
         }
       } else {
         console.error('Failed to fetch:', data.message);
@@ -103,14 +121,6 @@ const DateTimePage = ({route}) => {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Handle date selection
-  const handleDateSelection = (date) => {
-    console.log ("date", date);
-    setSelectedDate(date);
-    const selectedDayName = getDayName(new Date(2024, 4, date)); // Using May 2024 as example
-    fetchFacilities(date);
   };
 
   // Check if time slot is free
@@ -270,10 +280,10 @@ const DateTimePage = ({route}) => {
     );
   };
 
-  // Initial fetch
+  // Initial fetch with today's date
   useEffect(() => {
-    const currentDay = getDayName(new Date());
-    fetchFacilities(currentDay);
+    const today = new Date().toISOString().split('T')[0];
+    fetchFacilities(today);
   }, []);
 
   // Update continue button to be disabled if times are invalid

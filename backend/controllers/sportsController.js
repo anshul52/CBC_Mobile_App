@@ -67,11 +67,33 @@ export const getSportsDetailsDayWiseAndFacilityWiseController = async (req, res)
       SPORTS_QUERIES.SELECT_SPORTS_DETAILS_DAY_WISE_AND_FACILITY_WISE,
       [day, facilityId]
     );
+  
+    
 
-    if (!rows || rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: RESPONSE_MESSAGES.SPORTS_DETAILS_NOT_FOUND,
+    const defaultFacility = {
+      facility_id: Number(facilityId),
+      facility_name: null,
+      day_type_id: null,
+      day_type_name: null,
+      day: day,
+      "open_time": "00:00:00",
+      "close_time": "00:00:00",
+      pricing_rules: [
+        {
+          start_time: "00:00:00",
+          end_time: "00:00:00",
+          price: "0.00",
+          unit: "hour"
+        }
+      ],
+      equipment_rentals: []
+    };
+
+    if (!rows || rows.length === 0 || !rows[0].facility_id) {
+      return res.status(200).json({
+        success: true,
+        message: "Facility closed or no data available for the given day",
+        sportDetails: defaultFacility
       });
     }
 

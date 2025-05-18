@@ -3,7 +3,7 @@ import {View, Text, StyleSheet} from 'react-native';
 import {Calendar} from 'react-native-calendars';
 
 const CalendarComponent = ({onDateSelect, selectedDate, setSelectedDate}) => {
- 
+  const today = new Date()?.toISOString()?.split('T')[0];
   
   const markedDates = selectedDate ? {
     [selectedDate]: {
@@ -21,12 +21,13 @@ const CalendarComponent = ({onDateSelect, selectedDate, setSelectedDate}) => {
   return (
     <View style={styles.container}>
       <Calendar
-         
+        current={today}
+        minDate={today}
         markedDates={markedDates}
         onDayPress={onDayPress}
         enableSwipeMonths={true}
-        allowSelectionOutOfRange={false}
-        markingType={'dot'}
+        hideExtraDays={true}
+        markingType={'custom'}
         theme={{
           backgroundColor: '#ffffff',
           calendarBackground: '#ffffff',
@@ -85,7 +86,7 @@ const CalendarComponent = ({onDateSelect, selectedDate, setSelectedDate}) => {
           const month = date.toString('MMMM yyyy');
           return (
             <Text style={styles.monthText}>
-              May 2025
+              {month}
             </Text>
           );
         }}
