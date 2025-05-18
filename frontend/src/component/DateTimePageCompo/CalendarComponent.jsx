@@ -2,8 +2,8 @@ import React, {useState} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {Calendar} from 'react-native-calendars';
 
-const CalendarComponent = () => {
-  const [selectedDate, setSelectedDate] = useState(null);
+const CalendarComponent = ({onDateSelect, selectedDate, setSelectedDate}) => {
+  const today = new Date()?.toISOString()?.split('T')[0];
 
   const markedDates = selectedDate
     ? {
@@ -12,21 +12,34 @@ const CalendarComponent = () => {
           selectedColor: 'blue',
           disableTouchEvent: false,
         },
+        [today]: {
+          customStyles: {
+            container: {
+              backgroundColor: 'transparent', // No circle background
+            },
+            text: {
+              color: '#2d4150', // Normal text color
+            },
+          },
+        },
       }
     : {};
 
   const onDayPress = day => {
     setSelectedDate(day.dateString);
+    onDateSelect(day.dateString);
   };
 
   return (
     <View style={styles.container}>
       <Calendar
+        current={today}
+        minDate={today}
         markedDates={markedDates}
         onDayPress={onDayPress}
         enableSwipeMonths={true}
-        allowSelectionOutOfRange={false}
-        markingType={'dot'}
+        hideExtraDays={true}
+        markingType={'custom'}
         theme={{
           backgroundColor: '#ffffff',
           calendarBackground: '#ffffff',
@@ -81,7 +94,7 @@ const CalendarComponent = () => {
         )}
         renderHeader={date => {
           const month = date.toString('MMMM yyyy');
-          return <Text style={styles.monthText}>May 2025</Text>;
+          return <Text style={styles.monthText}>{month}</Text>;
         }}
       />
     </View>
