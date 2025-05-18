@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {Calendar} from 'react-native-calendars';
 
-const CalendarComponent = () => {
-  const [selectedDate, setSelectedDate] = useState(null);
-
+const CalendarComponent = ({onDateSelect, selectedDate, setSelectedDate}) => {
+ 
+  
   const markedDates = selectedDate ? {
     [selectedDate]: {
       selected: true,
@@ -15,6 +15,7 @@ const CalendarComponent = () => {
 
   const onDayPress = (day) => {
     setSelectedDate(day.dateString);
+    onDateSelect(day.dateString);
   };
 
   return (

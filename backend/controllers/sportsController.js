@@ -59,8 +59,10 @@ export const getSportDetailsFacilityWiseController = async (req, res) => {
 
 export const getSportsDetailsDayWiseAndFacilityWiseController = async (req, res) => {
   try {
-    const { day, facilityId } = req.query;
+    const { date, facilityId } = req.query;
 
+     const day = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }); 
+     console.log("day", day);
     const rows = await executeQuery2(
       SPORTS_QUERIES.SELECT_SPORTS_DETAILS_DAY_WISE_AND_FACILITY_WISE,
       [day, facilityId]

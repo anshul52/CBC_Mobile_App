@@ -65,7 +65,7 @@ const DateTimePage = ({route}) => {
     return days[date.getDay()];
   };
 
-  const fetchFacilities = async (selectedDay) => {
+  const fetchFacilities = async (date) => {
     try {
       const token = await AsyncStorage.getItem('authToken');
       if (!token) {
@@ -73,11 +73,11 @@ const DateTimePage = ({route}) => {
         return;
       }
 
-      const facilityId = 1; // Default facility ID for testing
+      const facilityId = 6; // Default facility ID for testing
       setLoading(true);
 
       const response = await fetch(
-        `http://10.0.2.2:8085/api/sports/sports-details-day-wise-and-facility-wise?day=${selectedDay}&facilityId=${facilityId}`,
+        `http://10.0.2.2:8085/api/sports/sports-details-day-wise-and-facility-wise?date=${date}&facilityId=${facilityId}`,
         {
           method: 'GET',
           headers: {
@@ -107,9 +107,10 @@ const DateTimePage = ({route}) => {
 
   // Handle date selection
   const handleDateSelection = (date) => {
+    console.log ("date", date);
     setSelectedDate(date);
     const selectedDayName = getDayName(new Date(2024, 4, date)); // Using May 2024 as example
-    fetchFacilities(selectedDayName);
+    fetchFacilities(date);
   };
 
   // Check if time slot is free
@@ -140,15 +141,27 @@ const DateTimePage = ({route}) => {
   useEffect(() => {
     if (facilityDetails?.sportDetails) {
       const { open_time, close_time } = facilityDetails.sportDetails;
-      const startHour = parseInt(open_time.split(':')[0]);
-      const endHour = parseInt(close_time.split(':')[0]);
+      
+      // Convert facility times to hours
+      const [openHour] = open_time.split(':').map(Number);
+      const [closeHour] = close_time.split(':').map(Number);
       
       const slots = [];
-      for (let hour = startHour; hour < endHour; hour++) {
+      for (let hour = openHour; hour <= closeHour; hour++) {
         const time24 = `${hour.toString().padStart(2, '0')}:00:00`;
         slots.push(convertTo12Hour(time24));
       }
+      
+      // Set available times
       setAvailableEndTimes(slots);
+      
+      // Set initial start and end times
+      const initialStartTime = convertTo12Hour(open_time);
+      const nextHourAfterStart = `${(openHour + 1).toString().padStart(2, '0')}:00:00`;
+      const initialEndTime = convertTo12Hour(nextHourAfterStart);
+      
+      setStartTime(initialStartTime);
+      setEndTime(initialEndTime);
     }
   }, [facilityDetails]);
 
@@ -159,13 +172,35 @@ const DateTimePage = ({route}) => {
     }
   }, [endTime]);
 
-  // Filter available end times based on start time
+  // Filter available end times based on start time and facility closing time
   const getFilteredEndTimes = () => {
+    if (!facilityDetails?.sportDetails) return [];
+
     const startHour = parseInt(convertTo24Hour(startTime).split(':')[0]);
+    const [closeHour] = facilityDetails.sportDetails.close_time.split(':').map(Number);
+
     return availableEndTimes.filter(time => {
       const hour = parseInt(convertTo24Hour(time).split(':')[0]);
-      return hour > startHour;
+      return hour > startHour && hour <= closeHour;
     });
+  };
+
+  // Validate time selection
+  const validateTimeSelection = () => {
+    if (!facilityDetails?.sportDetails) return false;
+
+    const { open_time, close_time } = facilityDetails.sportDetails;
+    const [openHour] = open_time.split(':').map(Number);
+    const [closeHour] = close_time.split(':').map(Number);
+    
+    const selectedStartHour = parseInt(convertTo24Hour(startTime).split(':')[0]);
+    const selectedEndHour = parseInt(convertTo24Hour(endTime).split(':')[0]);
+
+    return (
+      selectedStartHour >= openHour &&
+      selectedEndHour <= closeHour &&
+      selectedStartHour < selectedEndHour
+    );
   };
 
   // Calculate price for selected time slot
@@ -241,6 +276,21 @@ const DateTimePage = ({route}) => {
     fetchFacilities(currentDay);
   }, []);
 
+  // Update continue button to be disabled if times are invalid
+  const continueButton = (
+    <TouchableOpacity 
+      style={[
+        styles.continueButton,
+        !validateTimeSelection() && styles.disabledButton
+      ]}
+      disabled={!validateTimeSelection()}
+      onPress={() => {
+        // Handle continue logic
+      }}>
+      <Text style={styles.continueButtonText}>Continue Booking</Text>
+    </TouchableOpacity>
+  );
+
   return (
     <ImageBackground
       source={require('../../assets/Booking/Group.png')}
@@ -271,7 +321,7 @@ const DateTimePage = ({route}) => {
               )}
             </View>
 
-            <CalendarComponent onDateSelect={handleDateSelection} selectedDate={selectedDate} />
+            <CalendarComponent onDateSelect={handleDateSelection} selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
 
             <Text style={styles.sectionTitle}>Choose Available Time</Text>
 
@@ -351,10 +401,7 @@ const DateTimePage = ({route}) => {
             )}
           </ScrollView>
           
-          <TouchableOpacity 
-            style={styles.continueButton}>
-            <Text style={styles.continueButtonText}>Continue Booking</Text>
-          </TouchableOpacity>
+          {continueButton}
         </View>
       </SafeAreaView>
     </ImageBackground>
@@ -650,6 +697,10 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: '600',
+  },
+  disabledButton: {
+    backgroundColor: '#ccc',
+    opacity: 0.7,
   },
 });
 
