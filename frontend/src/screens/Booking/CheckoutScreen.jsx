@@ -11,6 +11,7 @@ import {
   ImageBackground,
   Button,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import Back from '../../assets/Booking/Back.svg';
 import {CardField, useStripe} from '@stripe/stripe-react-native';
@@ -21,17 +22,21 @@ export default function CheckoutScreen() {
   const navigation = useNavigation();
   const [cardDetails, setCardDetails] = useState({});
   const {confirmPayment} = useStripe();
+  const [loading, setLoading] = useState(false);
 
   const handlePayPress = async () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
       if (!token) {
-        console.warn('No token found');
+        Alert.alert('Error', 'Please login to continue');
         return;
       }
+
+      // Show loading indicator
+      setLoading(true);
+
       const response = await fetch(
         'https://cbc-mobile-app.onrender.com/api/payment/create-payment-intent',
-        // 'http://10.0.2.2:8085/api/payment/create-payment-intent',
         {
           method: 'POST',
           headers: {
@@ -39,27 +44,60 @@ export default function CheckoutScreen() {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            amount: 100,
+            amount: 100, // Replace with actual amount from your booking
+            currency: 'inr'
           }),
         },
       );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Payment initialization failed');
+      }
+
       const {clientSecret} = await response.json();
 
+      // Confirm payment with Stripe
       const {error, paymentIntent} = await confirmPayment(clientSecret, {
         paymentMethodType: 'Card',
         paymentMethodData: {
           billingDetails: {
-            email: 'anshulgupta2028@gmail.com',
+            email: 'anshulgupta2028@gmail.com', // Replace with actual user email
           },
         },
       });
 
       if (error) {
+        Alert.alert('Payment Failed', error.message);
         navigation.replace('PaymentFailed', {
           reason: error.message || 'Payment failed',
         });
       } else if (paymentIntent && paymentIntent.status === 'Succeeded') {
-        navigation.replace('PaymentCompleted');
+        // Verify payment status with backend
+        const verifyResponse = await fetch(
+          'https://cbc-mobile-app.onrender.com/api/payment/status',
+          {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        if (verifyResponse.ok) {
+          const {payment} = await verifyResponse.json();
+          if (payment.status === 'completed') {
+            navigation.replace('PaymentCompleted');
+          } else {
+            navigation.replace('PaymentFailed', {
+              reason: 'Payment verification failed',
+            });
+          }
+        } else {
+          navigation.replace('PaymentFailed', {
+            reason: 'Could not verify payment status',
+          });
+        }
       } else {
         navigation.replace('PaymentFailed', {
           reason: `Unexpected status: ${paymentIntent?.status}`,
@@ -67,9 +105,12 @@ export default function CheckoutScreen() {
       }
     } catch (err) {
       console.error('Payment error', err);
+      Alert.alert('Error', 'Something went wrong with the payment');
       navigation.replace('PaymentFailed', {
         reason: 'Something went wrong',
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -102,14 +143,21 @@ export default function CheckoutScreen() {
                 onCardChange={cardDetails => setCardDetails(cardDetails)}
                 style={{height: 50, marginVertical: 30, backgroundColor: 'red'}}
               />
-              <Button onPress={handlePayPress} title="Pay" />
+              <Button 
+                onPress={handlePayPress} 
+                title="Pay" 
+                disabled={loading}
+              />
             </View>
           </ScrollView>
 
           <TouchableOpacity
-            style={styles.continueButton}
-            onPress={handlePayPress}>
-            <Text style={styles.continueButtonText}>Payment Done</Text>
+            style={[styles.continueButton, loading && styles.disabledButton]}
+            onPress={handlePayPress}
+            disabled={loading}>
+            <Text style={styles.continueButtonText}>
+              {loading ? 'Processing...' : 'Payment Done'}
+            </Text>
           </TouchableOpacity>
         </View>
         {/* ------------------ */}
@@ -373,5 +421,19 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 12,
     fontFamily: 'Satoshi-Medium',
+  },
+  disabledButton: {
+    backgroundColor: '#ccc',
+    opacity: 0.7,
+  },
+  loadingContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
 });
