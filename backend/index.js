@@ -6,11 +6,14 @@ import userRoute from './routes/userRoutes.js';
 import sportsRoute from './routes/sportsRoute.js';
 import paymentRoute from './routes/paymentRoutes.js';
 import morgan from 'morgan';
+ 
+import logger from './utils/logger.js';
 
 dotenv.config(); // Load environment variables from .env file
 
+const PORT = process.env.PORT || 8085;
+
 const app = express(); // Create an Express application
-const PORT = process.env.PORT; // Set the port
 
 app.use(cors()); // Enable CORS
 app.use(express.json()); // Middleware to parse JSON requests
@@ -23,5 +26,6 @@ app.use("/api/payment", paymentRoute);
 
 // Start the server
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`); // Log the server URL
+    logger.info(`Server is running on port ${PORT}`);
+    logger.info(`Webhook endpoint: ${process.env.BASE_URL}/api/payment/webhook`);
 });

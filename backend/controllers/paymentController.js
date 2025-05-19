@@ -5,62 +5,56 @@ import { SQL_QUERIES } from '../queries/queries.js';
 import stripe from '../config/stripe.js';
 
 export const createPaymentIntent = async (req, res) => {
-    const { _id } = req.user;
-    const { amount, currency = 'inr' } = req.body;
-
     try {
-        // Get user details from database
-        const [user] = await executeQuery2(SQL_QUERIES.SELECT_USER_DETAILS, [_id]);
+        const { _id } = req.user;
         
-        if (!user) {
-            logger.error(LOG_MESSAGES.USER_NOT_FOUND);
-            return res.status(404).json({
+        // Validate request body
+        if (!req.body) {
+            logger.error('Request body is missing');
+            return res.status(400).json({
                 success: false,
-                message: RESPONSE_MESSAGES.USER_NOT_FOUND
+                message: 'Request body is required'
             });
         }
 
-        // Create a unique order ID
-        const orderId = `order_${Date.now()}_${_id}`;
+        const { amount, currency = 'inr' } = req.body;
 
-        // Create initial payment record
-        await executeQuery2(SQL_QUERIES.CREATE_PAYMENT_RECORD, [
-            _id,
-            'pending',
-            amount,
-            new Date(),
-            orderId
-        ]);
+        // Validate amount
+        if (!amount || amount <= 0) {
+            logger.error('Invalid amount provided');
+            return res.status(400).json({
+                success: false,
+                message: 'Valid amount is required'
+            });
+        }
 
         // Create a PaymentIntent with the order amount and currency
         const paymentIntent = await stripe.paymentIntents.create({
             amount: Math.round(amount * 100), // Convert to smallest currency unit (paise for INR)
             currency: currency,
             metadata: {
-                user_id: _id,
-                email: user.email,
-                order_id: orderId
+                user_id: _id
             },
             automatic_payment_methods: {
                 enabled: true,
                 allow_redirects: 'never'
-            },
-            description: `Payment for order ${orderId}`
+            }
         });
+
+        logger.info(`Payment intent created successfully for user: ${_id}`);
 
         res.status(200).json({
             success: true,
             message: RESPONSE_MESSAGES.PAYMENT_INTENT_CREATED,
-            clientSecret: paymentIntent.client_secret,
-            orderId: orderId
+            clientSecret: paymentIntent.client_secret
         });
 
     } catch (error) {
-        logger.error(LOG_MESSAGES.ERROR_IN_PAYMENT_INTENT(error));
-        console.log(error);
+        logger.error(`Error in payment intent creation: ${error.message}`);
+        console.error('Full error:', error);
         res.status(500).json({
             success: false,
-            message: RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
+            message: error.message || RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
         });
     }
 };
