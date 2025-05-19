@@ -16,7 +16,42 @@ export const SQL_QUERIES = {
     payment_date = VALUES(payment_date),
     transaction_id = VALUES(transaction_id)
   `,
-  GET_PAYMENT_STATUS: 'SELECT * FROM payments WHERE user_id = ? ORDER BY payment_date DESC LIMIT 1'
+  GET_PAYMENT_STATUS: 'SELECT * FROM payments WHERE user_id = ? ORDER BY payment_date DESC LIMIT 1',
+  CREATE_PAYMENT_RECORD: `
+    INSERT INTO payments (user_id, status, amount, payment_date, order_id)
+    VALUES (?, ?, ?, ?, ?)
+  `,
+  UPDATE_PAYMENT_STATUS: `
+    UPDATE payments 
+    SET status = ?, 
+        amount = ?, 
+        payment_date = ?, 
+        transaction_id = ?
+    WHERE order_id = ? AND user_id = ?
+  `,
+  GET_PAYMENT_STATUS_BY_ORDER: `
+    SELECT p.*, u.email 
+    FROM payments p
+    JOIN users u ON p.user_id = u.id
+    WHERE p.user_id = ? AND p.order_id = ?
+    ORDER BY p.payment_date DESC
+    LIMIT 1
+  `,
+  CREATE_BOOKING_RECORD: `
+    INSERT INTO bookings (user_id, order_id, booking_date, status)
+    VALUES (?, ?, ?, ?)
+  `,
+  GET_BOOKING_DETAILS: `
+    SELECT b.*, p.amount, p.payment_date, p.status as payment_status
+    FROM bookings b
+    JOIN payments p ON b.order_id = p.order_id
+    WHERE b.order_id = ?
+  `,
+  SELECT_USER_DETAILS: `
+    SELECT id, email, firstname, lastname, phone
+    FROM users
+    WHERE id = ?
+  `
 };
 
 export const SPORTS_QUERIES = {
