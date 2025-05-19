@@ -18,7 +18,7 @@ import CalendarComponent from '../../component/DateTimePageCompo/CalendarCompone
 const DateTimePage = ({route}) => {
   const navigation = useNavigation();
   const {facility} = route.params;
-  // console.log('Facility:', +facility.id);
+  console.log('Facility:', facility);
 
   const [selectedDate, setSelectedDate] = useState(new Date().getDate());
   const [startTime, setStartTime] = useState('08:00 AM');
