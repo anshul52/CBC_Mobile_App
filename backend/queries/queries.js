@@ -1,6 +1,7 @@
 export const SQL_QUERIES = {
   INSERT_OTP: "INSERT INTO otp_logs (phone, otp, expires_at) VALUES (?, ?, ?)",
-  SELECT_LATEST_OTP:"SELECT * FROM otp_logs WHERE phone = ? ORDER BY created_at DESC LIMIT 1",
+  SELECT_LATEST_OTP:
+    "SELECT * FROM otp_logs WHERE phone = ? ORDER BY created_at DESC LIMIT 1",
   DELETE_OTP: "DELETE FROM otp_logs WHERE id = ?",
   UPDATE_ATTEMPTS: "UPDATE otp_logs SET attempts = attempts + 1 WHERE id = ?",
   MARK_OTP_VERIFIED: "UPDATE otp_logs SET is_verified = TRUE WHERE id = ?",
@@ -16,7 +17,8 @@ export const SQL_QUERIES = {
     payment_date = VALUES(payment_date),
     transaction_id = VALUES(transaction_id)
   `,
-  GET_PAYMENT_STATUS: 'SELECT * FROM payments WHERE user_id = ? ORDER BY payment_date DESC LIMIT 1',
+  GET_PAYMENT_STATUS:
+    "SELECT * FROM payments WHERE user_id = ? ORDER BY payment_date DESC LIMIT 1",
   CREATE_PAYMENT_RECORD: `
     INSERT INTO payments (user_id, status, amount, payment_date, order_id)
     VALUES (?, ?, ?, ?, ?)
@@ -48,10 +50,10 @@ export const SQL_QUERIES = {
     WHERE b.order_id = ?
   `,
   SELECT_USER_DETAILS: `
-    SELECT id, email, firstname, lastname, phone
+    SELECT *
     FROM users
     WHERE id = ?
-  `
+  `,
 };
 
 export const SPORTS_QUERIES = {
@@ -119,7 +121,7 @@ export const SPORTS_QUERIES = {
   INNER JOIN day_types dt ON oh.day_type_id = dt.id 
   LEFT JOIN pricing_rules pr ON pr.facility_id = f.id AND pr.day_type_id = dt.id
   LEFT JOIN equipment_rentals er ON er.facility_id = f.id
-  WHERE f.id = ?`, 
+  WHERE f.id = ?`,
   SELECT_SPORTS_DETAILS_FACILITY_WISE: `
    SELECT
         f.id AS facility_id,
