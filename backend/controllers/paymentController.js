@@ -60,6 +60,7 @@ export const createPaymentIntent = async (req, res) => {
 
 export const handleWebhook = async (req, res) => {
   const sig = req.headers["stripe-signature"];
+  alert("sig", sig);
   let event;
 
   try {
@@ -79,26 +80,24 @@ export const handleWebhook = async (req, res) => {
         const paymentIntent = event.data.object;
         try {
           // Update payment status in database
-          await executeQuery2(SQL_QUERIES.UPDATE_PAYMENT_STATUS, [
-            "completed",
-            paymentIntent.amount / 100,
-            new Date(),
-            paymentIntent.id,
-            paymentIntent.metadata.order_id,
-            paymentIntent.metadata.user_id,
-          ]);
+          //   await executeQuery2(SQL_QUERIES.UPDATE_PAYMENT_STATUS, [
+          //     "completed",
+          //     paymentIntent.amount / 100,
+          //     new Date(),
+          //     paymentIntent.id,
+          //     paymentIntent.metadata.order_id,
+          //     paymentIntent.metadata.user_id,
+          //   ]);
 
           // Create booking record
-          await executeQuery2(SQL_QUERIES.CREATE_BOOKING_RECORD, [
-            paymentIntent.metadata.user_id,
-            paymentIntent.metadata.order_id,
-            new Date(),
-            "confirmed",
-          ]);
+          //   await executeQuery2(SQL_QUERIES.CREATE_BOOKING_RECORD, [
+          //     paymentIntent.metadata.user_id,
+          //     paymentIntent.metadata.order_id,
+          //     new Date(),
+          //     "confirmed",
+          //   ]);
 
-          logger.info(
-            `Payment succeeded for order: ${paymentIntent.metadata.order_id}`
-          );
+          logger.info(`Payment succeeded for order: ${paymentIntent}`);
         } catch (dbError) {
           logger.error(
             `Database error processing successful payment: ${dbError.message}`
@@ -110,18 +109,16 @@ export const handleWebhook = async (req, res) => {
       case "payment_intent.payment_failed":
         const failedPayment = event.data.object;
         try {
-          await executeQuery2(SQL_QUERIES.UPDATE_PAYMENT_STATUS, [
-            "failed",
-            failedPayment.amount / 100,
-            new Date(),
-            failedPayment.id,
-            failedPayment.metadata.order_id,
-            failedPayment.metadata.user_id,
-          ]);
+          //   await executeQuery2(SQL_QUERIES.UPDATE_PAYMENT_STATUS, [
+          //     "failed",
+          //     failedPayment.amount / 100,
+          //     new Date(),
+          //     failedPayment.id,
+          //     failedPayment.metadata.order_id,
+          //     failedPayment.metadata.user_id,
+          //   ]);
 
-          logger.error(
-            `Payment failed for order: ${failedPayment.metadata.order_id}`
-          );
+          logger.error(` Payment failed for order: ${failedPayment}`);
         } catch (dbError) {
           logger.error(
             `Database error processing failed payment: ${dbError.message}`
@@ -133,14 +130,16 @@ export const handleWebhook = async (req, res) => {
       case "payment_intent.processing":
         const processingPayment = event.data.object;
         try {
-          await executeQuery2(SQL_QUERIES.UPDATE_PAYMENT_STATUS, [
-            "processing",
-            processingPayment.amount / 100,
-            new Date(),
-            processingPayment.id,
-            processingPayment.metadata.order_id,
-            processingPayment.metadata.user_id,
-          ]);
+          //   await executeQuery2(SQL_QUERIES.UPDATE_PAYMENT_STATUS, [
+          //     "processing",
+          //     processingPayment.amount / 100,
+          //     new Date(),
+          //     processingPayment.id,
+          //     processingPayment.metadata.order_id,
+          //     processingPayment.metadata.user_id,
+          //   ]);
+
+          console.log("processingPayment", processingPayment);
         } catch (dbError) {
           logger.error(
             `Database error processing payment in processing state: ${dbError.message}`
@@ -152,14 +151,15 @@ export const handleWebhook = async (req, res) => {
       case "payment_intent.canceled":
         const canceledPayment = event.data.object;
         try {
-          await executeQuery2(SQL_QUERIES.UPDATE_PAYMENT_STATUS, [
-            "canceled",
-            canceledPayment.amount / 100,
-            new Date(),
-            canceledPayment.id,
-            canceledPayment.metadata.order_id,
-            canceledPayment.metadata.user_id,
-          ]);
+          //   await executeQuery2(SQL_QUERIES.UPDATE_PAYMENT_STATUS, [
+          //     "canceled",
+          //     canceledPayment.amount / 100,
+          //     new Date(),
+          //     canceledPayment.id,
+          //     canceledPayment.metadata.order_id,
+          //     canceledPayment.metadata.user_id,
+          //   ]);
+          console.log("canceledPayment", canceledPayment);
         } catch (dbError) {
           logger.error(
             `Database error processing canceled payment: ${dbError.message}`

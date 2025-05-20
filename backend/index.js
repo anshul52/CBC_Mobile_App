@@ -16,8 +16,8 @@ const PORT = process.env.PORT || 8085;
 const app = express(); // Create an Express application
 
 app.use(cors()); // Enable CORS
-app.use(express.json()); // Middleware to parse JSON requests
-app.use(morgan("dev")); // Log requests
+app.use(express.json());
+app.use(morgan("dev"));
 
 app.use("/api/auth", authRoute);
 app.use("/api/user", userRoute);
