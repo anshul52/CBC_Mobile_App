@@ -8,6 +8,7 @@ import paymentRoute from "./routes/paymentRoutes.js";
 import morgan from "morgan";
 
 import logger from "./utils/logger.js";
+import { handleWebhook } from "./controllers/paymentController.js";
 
 dotenv.config(); // Load environment variables from .env file
 
@@ -16,8 +17,13 @@ const PORT = process.env.PORT || 8085;
 const app = express(); // Create an Express application
 
 app.use(cors()); // Enable CORS
-app.use(express.json());
-app.use(morgan("dev"));
+app.use(
+  "/api/payment/webhook",
+  express.raw({ type: "application/json" }),
+  handleWebhook
+);
+app.use(express.json()); // Middleware to parse JSON requests
+app.use(morgan("dev")); // Log requests
 
 app.use("/api/auth", authRoute);
 app.use("/api/user", userRoute);

@@ -17,8 +17,8 @@ const AppNavigator = () => (
     {/* <Stack.Screen name="OTP" component={FacilityList} /> */}
 
     {/* <Stack.Screen name="Login" component={LoginScreen} />
-    <Stack.Screen name="OTP" component={OTPVerificationScreen} /> */}
-    {/* <Stack.Screen
+    <Stack.Screen name="OTP" component={OTPVerificationScreen} />
+    <Stack.Screen
       name="FacilitySelection"
       component={FacilitySelectionScreen}
     />

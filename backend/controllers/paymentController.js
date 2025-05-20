@@ -60,7 +60,6 @@ export const createPaymentIntent = async (req, res) => {
 
 export const handleWebhook = async (req, res) => {
   const sig = req.headers["stripe-signature"];
-  console.log("sig", sig);
   let event;
 
   try {
@@ -73,6 +72,105 @@ export const handleWebhook = async (req, res) => {
 
     // Log the event type for debugging
     logger.info(`Processing webhook event: ${event.type}`);
+
+    // Handle the event
+    switch (event.type) {
+      case "payment_intent.succeeded":
+        const paymentIntent = event.data.object;
+        try {
+          // Update payment status in database
+          await executeQuery2(SQL_QUERIES.UPDATE_PAYMENT_STATUS, [
+            "completed",
+            paymentIntent.amount / 100,
+            new Date(),
+            paymentIntent.id,
+            paymentIntent.metadata.order_id,
+            paymentIntent.metadata.user_id,
+          ]);
+
+          // Create booking record
+          await executeQuery2(SQL_QUERIES.CREATE_BOOKING_RECORD, [
+            paymentIntent.metadata.user_id,
+            paymentIntent.metadata.order_id,
+            new Date(),
+            "confirmed",
+          ]);
+
+          logger.info(
+            `Payment succeeded for order: ${paymentIntent.metadata.order_id}`
+          );
+        } catch (dbError) {
+          logger.error(
+            `Database error processing successful payment: ${dbError.message}`
+          );
+          throw dbError;
+        }
+        break;
+
+      case "payment_intent.payment_failed":
+        const failedPayment = event.data.object;
+        try {
+          await executeQuery2(SQL_QUERIES.UPDATE_PAYMENT_STATUS, [
+            "failed",
+            failedPayment.amount / 100,
+            new Date(),
+            failedPayment.id,
+            failedPayment.metadata.order_id,
+            failedPayment.metadata.user_id,
+          ]);
+
+          logger.error(
+            `Payment failed for order: ${failedPayment.metadata.order_id}`
+          );
+        } catch (dbError) {
+          logger.error(
+            `Database error processing failed payment: ${dbError.message}`
+          );
+          throw dbError;
+        }
+        break;
+
+      case "payment_intent.processing":
+        const processingPayment = event.data.object;
+        try {
+          await executeQuery2(SQL_QUERIES.UPDATE_PAYMENT_STATUS, [
+            "processing",
+            processingPayment.amount / 100,
+            new Date(),
+            processingPayment.id,
+            processingPayment.metadata.order_id,
+            processingPayment.metadata.user_id,
+          ]);
+        } catch (dbError) {
+          logger.error(
+            `Database error processing payment in processing state: ${dbError.message}`
+          );
+          throw dbError;
+        }
+        break;
+
+      case "payment_intent.canceled":
+        const canceledPayment = event.data.object;
+        try {
+          await executeQuery2(SQL_QUERIES.UPDATE_PAYMENT_STATUS, [
+            "canceled",
+            canceledPayment.amount / 100,
+            new Date(),
+            canceledPayment.id,
+            canceledPayment.metadata.order_id,
+            canceledPayment.metadata.user_id,
+          ]);
+        } catch (dbError) {
+          logger.error(
+            `Database error processing canceled payment: ${dbError.message}`
+          );
+          throw dbError;
+        }
+        break;
+
+      default:
+        logger.info(`Unhandled event type: ${event.type}`);
+    }
 
     // Return a 200 response to acknowledge receipt of the event
     res.json({ received: true });
@@ -94,49 +192,49 @@ export const handleWebhook = async (req, res) => {
   }
 };
 
-// export const getPaymentStatus = async (req, res) => {
-//   const { _id } = req.user;
-//   const { orderId } = req.query;
+export const getPaymentStatus = async (req, res) => {
+  const { _id } = req.user;
+  const { orderId } = req.query;
 
-//   try {
-//     // Get payment status with order ID for more precise tracking
-//     const [payment] = await executeQuery2(
-//       SQL_QUERIES.GET_PAYMENT_STATUS_BY_ORDER,
-//       [_id, orderId]
-//     );
+  try {
+    // Get payment status with order ID for more precise tracking
+    const [payment] = await executeQuery2(
+      SQL_QUERIES.GET_PAYMENT_STATUS_BY_ORDER,
+      [_id, orderId]
+    );
 
-//     if (!payment) {
-//       return res.status(404).json({
-//         success: false,
-//         message: RESPONSE_MESSAGES.PAYMENT_NOT_FOUND,
-//       });
-//     }
+    if (!payment) {
+      return res.status(404).json({
+        success: false,
+        message: RESPONSE_MESSAGES.PAYMENT_NOT_FOUND,
+      });
+    }
 
-//     // Get booking details if payment is completed
-//     let bookingDetails = null;
-//     if (payment.status === "completed") {
-//       [bookingDetails] = await executeQuery2(SQL_QUERIES.GET_BOOKING_DETAILS, [
-//         orderId,
-//       ]);
-//     }
+    // Get booking details if payment is completed
+    let bookingDetails = null;
+    if (payment.status === "completed") {
+      [bookingDetails] = await executeQuery2(SQL_QUERIES.GET_BOOKING_DETAILS, [
+        orderId,
+      ]);
+    }
 
-//     res.status(200).json({
-//       success: true,
-//       message: RESPONSE_MESSAGES.PAYMENT_STATUS_RETRIEVED,
-//       payment: {
-//         status: payment.status,
-//         amount: payment.amount,
-//         date: payment.payment_date,
-//         transactionId: payment.transaction_id,
-//         orderId: payment.order_id,
-//         booking: bookingDetails,
-//       },
-//     });
-//   } catch (error) {
-//     logger.error(LOG_MESSAGES.ERROR_IN_GET_PAYMENT_STATUS(error));
-//     res.status(500).json({
-//       success: false,
-//       message: RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
-//     });
-//   }
-// };
+    res.status(200).json({
+      success: true,
+      message: RESPONSE_MESSAGES.PAYMENT_STATUS_RETRIEVED,
+      payment: {
+        status: payment.status,
+        amount: payment.amount,
+        date: payment.payment_date,
+        transactionId: payment.transaction_id,
+        orderId: payment.order_id,
+        booking: bookingDetails,
+      },
+    });
+  } catch (error) {
+    logger.error(LOG_MESSAGES.ERROR_IN_GET_PAYMENT_STATUS(error));
+    res.status(500).json({
+      success: false,
+      message: RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+    });
+  }
+};
